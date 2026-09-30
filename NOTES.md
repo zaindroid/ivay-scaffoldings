@@ -50,6 +50,14 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 | A14 | ยง4 | Spec wants a contract test "on each side". SDK side does not exist yet; Pydantic models arrive in M5. | M0 has the schema-level test in `api/tests/test_contracts.py`. The SDK-side test is added in M1, the Pydantic-vs-fixtures test in M5. Both read the same fixtures and `manifest.json`. |
 | A15 | ยง7.1 | Config size limit (50 KB). | Not applicable yet. Recorded when the builder exists (M5). |
 | A16 | ยง5 | Dev DB credentials in compose and `.env.example`. | Dev-only defaults (`ivay` / `ivay_dev`), Postgres port bound to 127.0.0.1. Not secrets; nothing production-facing uses them. |
+| A17 | ง8.1 | Consent is checked before the config is fetched, but `required_consent` lives in the config. | Init option `purposes` (default `["analytics"]`) gates the config fetch. After the fetch the config's `required_consent` is checked too; if it asks for more, the SDK stays inert and a later consent change retries. Nothing is stored before both pass. The config GET carries no identifier. |
+| A18 | ง8.1 | What is `configBase`? | Config URL is `${configBase}/${shopId}.json`. Dev: `http://localhost:8080/config`. The API (M5) serves the same at `/v1/config/{shop_id}.json` as well as without the suffix. |
+| A19 | ง8.3 | "Session cookie, 30 minutes of inactivity" : a pure session cookie has no inactivity timeout. | `ivay_sid` is written with `Max-Age=1800` and renewed on every touch (page load, each flush), so 30 idle minutes ends it. The pixel reads the same cookie. A new session id resets the sessionStorage state. |
+| A20 | ง8.3 | Spec says Secure cookies. | `Secure` is added on https pages only, so `http://localhost` dev works in every browser. Production shops are https. |
+| A21 | ง8.1 | "fetch, validate, cache" config. | No client-side cache: it would be another storage write. The config is served `Cache-Control` by the server, so the HTTP cache does the job. |
+| A22 | ง4, A14 | SDK-side contract test. | The SDK cannot ship a JSON Schema validator in 10 KB, so `src/config.ts` has a hand-written validator. `tests/contract.test.ts` runs every shared fixture through it (valid must pass, invalid must fail; the manifest pointer is checked only on the API side) and validates envelopes the SDK builds against the real schema with Ajv (dev dependency only). |
+| A23 | ง8.2 | Cookie provider has no change event. | Polls `document.cookie` once a second until granted, then stops. |
+| A24 | ง8.8 | Fetch fallback headers. | No headers are set, so the request stays a CORS-simple `text/plain` POST, identical to sendBeacon, and needs no preflight. |
 
 ## Contract fixtures
 
@@ -59,9 +67,27 @@ test also checks that the manifest and the directory list the same files.
 
 ## Unverified Shopify assumptions
 
-None yet. Nothing in M0 touches Shopify. The list starts in M1 (Customer Privacy API) and M4
-(storefront globals, `/cart.js`, cart attributes, custom pixel API). Each entry will say what to
-check on a real shop.
+Each entry says VERIFIED (read in shopify.dev docs during this build) or UNVERIFIED (what to check on a real shop).
+
+- **S1 Customer Privacy API, VERIFIED (docs)**: `window.Shopify.customerPrivacy` with
+  `analyticsProcessingAllowed()`, `marketingAllowed()`, `preferencesProcessingAllowed()`,
+  `saleOfDataAllowed()` (booleans), loaded via `Shopify.loadFeatures([{name:'consent-tracking-api',
+  version:'0.1'}], cb)`; change event `visitorConsentCollected` on `document`, detail
+  `{marketingAllowed, saleOfDataAllowed, analyticsAllowed, preferencesAllowed}`. The SDK uses the
+  `*Allowed()` calls and the event, not the detail.
+- **S2 Consent API timing, UNVERIFIED**: the SDK does not call `loadFeatures`; it assumes the
+  theme or Shopify's banner has loaded the API, and treats a missing API as "not granted". Check on a
+  real shop: (a) `Shopify.customerPrivacy` exists when the SDK script runs, or how late it appears
+  (if it appears without firing `visitorConsentCollected`, the SDK never starts); (b) what
+  `analyticsProcessingAllowed()` returns in a region with no banner or before any choice.
+
+## Blockers
+
+- **B1 CI workflow cannot be pushed from this machine.** The `gh` token has no `workflow` scope, so
+  GitHub rejects any commit touching `.github/workflows/`. The intended new CI (an `sdk` job: tsc,
+  vitest, size gate; later analysis and e2e jobs) is kept in `docs/ci.pending.yml`. To apply:
+  `gh auth refresh -s workflow`, then `cp docs/ci.pending.yml .github/workflows/ci.yml`, commit, push.
+  Also note the existing `compose` job uses port 8000 and `docker compose`, which is fine on CI.
 
 ## Open questions for the owner
 
