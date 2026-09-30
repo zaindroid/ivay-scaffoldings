@@ -21,6 +21,8 @@ services:
     build: ./api
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ivay}:${POSTGRES_PASSWORD:-ivay_dev}@postgres:5432/${POSTGRES_DB:-ivay}
+      # Secrets are referenced by name from the shop table; values come from the environment only.
+      IVAY_WEBHOOK_SECRET_SHOP_DEV: ${IVAY_WEBHOOK_SECRET_SHOP_DEV:-}
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
     depends_on:

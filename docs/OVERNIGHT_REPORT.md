@@ -63,3 +63,26 @@ write and add-to-cart outcome happen; without consent there is no `/cart.js` req
 Bug found and fixed on the way: `stop()` during async start-up did not stop the boot (NOTES A43).
 **Bundle**: 5,861 bytes gzipped.
 **Blocked**: nothing. Shopify facts: S4 to S6 verified from docs, S7 and S8 UNVERIFIED, list in NOTES.md.
+
+## M5: Backend
+**Built**: `alembic/` (migration `0001`: the six tables, indexes, one-order-per-session partial unique
+index, the `session_rollup` view), `app/models.py`, `app/schemas.py` (Pydantic contract models),
+`app/guards.py` (body limit, JSON parsing for any content type, sliding-window rate limit, Origin and
+CORS), `repositories/` (shops, events), `services/` (ingest, config_builder, order_join), routers
+(`events`, `consent`, `config`, `webhooks`, `health`), `scripts/seed_dev.py`, Dockerfile runs
+migrations on start, compose passes the webhook secret variable.
+**Tested**: API 142 tests (134 new), SDK 145. Covers every valid and invalid envelope fixture,
+text/plain and JSON and missing content types, malformed and deeply nested bodies, out-of-range
+timestamps with rollback, duplicate event and decision ids, unknown shop, wrong, missing and look-alike
+origins, per-shop CORS, preflight, 64 KB body limit (declared and streamed), rate limit (per shop,
+sliding window, shared unknown-shop bucket), no IP or user agent stored or logged (schema, stored data
+and log records), HMAC pass and every failure mode (wrong secret, tampered body, missing, garbage,
+empty, secret env outside the prefix), order content extraction and "nothing else stored", webhook and
+pixel deduplication in both orders, config serving (contract match, ETag, 304, size limit, invalid
+stored config), consent ping (aggregate only), the `session_rollup` view on a four-session fixture,
+schema versus `models.py`, Pydantic versus JSON Schema agreement. Mutation check: breaking the HMAC
+comparison or the Origin check makes 4 and 5 tests fail respectively.
+**Verified against the running stack**: container migrates on start, `curl` config with CORS, text/plain
+beacon returns 204, row appears in `session_rollup`.
+**Bug found on the way**: Python 3.12 syntax in code for a 3.11 image (caught by mypy, NOTES A58).
+**Blocked**: nothing. UNVERIFIED: S9 (webhook payload fields), S10 (pixel Origin), S11 (currency).

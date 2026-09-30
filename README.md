@@ -12,7 +12,7 @@ The point is measurement: decide from real pilot data whether Phase 1 is worth b
 | Path | What |
 | ---- | ---- |
 | `contracts/` | JSON Schemas for the shop config and event envelope, plus shared fixtures |
-| `api/` | FastAPI service (currently `/health` only) |
+| `api/` | FastAPI service: event ingest, config, consent ping, order webhook, Alembic migrations |
 | `sdk/` | Browser SDK (TypeScript, zero runtime deps, under 10 KB gzipped) and the checkout pixel |
 | `demo-store/` | Static product, cart and policy pages served by the `static` container |
 | `docker/`, `docker-compose.yml` | Local stack: Postgres 16, API, nginx static server |
@@ -56,8 +56,8 @@ that implements them.
 | Milestone | State |
 | --------- | ----- |
 | M0 Scaffold and contracts | done (see NOTES.md for what could not be verified) |
-| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter | done |
-| M5 to M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
+| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter, M5 backend | done |
+| M6 to M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
 
 ## Installing the checkout pixel
 

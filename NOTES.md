@@ -50,33 +50,49 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 | A14 | ยง4 | Spec wants a contract test "on each side". SDK side does not exist yet; Pydantic models arrive in M5. | M0 has the schema-level test in `api/tests/test_contracts.py`. The SDK-side test is added in M1, the Pydantic-vs-fixtures test in M5. Both read the same fixtures and `manifest.json`. |
 | A15 | ยง7.1 | Config size limit (50 KB). | Not applicable yet. Recorded when the builder exists (M5). |
 | A16 | ยง5 | Dev DB credentials in compose and `.env.example`. | Dev-only defaults (`ivay` / `ivay_dev`), Postgres port bound to 127.0.0.1. Not secrets; nothing production-facing uses them. |
-| A17 | ง8.1 | Consent is checked before the config is fetched, but `required_consent` lives in the config. | Init option `purposes` (default `["analytics"]`) gates the config fetch. After the fetch the config's `required_consent` is checked too; if it asks for more, the SDK stays inert and a later consent change retries. Nothing is stored before both pass. The config GET carries no identifier. |
-| A18 | ง8.1 | What is `configBase`? | Config URL is `${configBase}/${shopId}.json`. Dev: `http://localhost:8080/config`. The API (M5) serves the same at `/v1/config/{shop_id}.json` as well as without the suffix. |
-| A19 | ง8.3 | "Session cookie, 30 minutes of inactivity" : a pure session cookie has no inactivity timeout. | `ivay_sid` is written with `Max-Age=1800` and renewed on every touch (page load, each flush), so 30 idle minutes ends it. The pixel reads the same cookie. A new session id resets the sessionStorage state. |
-| A20 | ง8.3 | Spec says Secure cookies. | `Secure` is added on https pages only, so `http://localhost` dev works in every browser. Production shops are https. |
-| A21 | ง8.1 | "fetch, validate, cache" config. | No client-side cache: it would be another storage write. The config is served `Cache-Control` by the server, so the HTTP cache does the job. |
-| A22 | ง4, A14 | SDK-side contract test. | The SDK cannot ship a JSON Schema validator in 10 KB, so `src/config.ts` has a hand-written validator. `tests/contract.test.ts` runs every shared fixture through it (valid must pass, invalid must fail; the manifest pointer is checked only on the API side) and validates envelopes the SDK builds against the real schema with Ajv (dev dependency only). |
-| A23 | ง8.2 | Cookie provider has no change event. | Polls `document.cookie` once a second until granted, then stops. |
-| A24 | ง8.8 | Fetch fallback headers. | No headers are set, so the request stays a CORS-simple `text/plain` POST, identical to sendBeacon, and needs no preflight. |
-| A25 | ง8.4 | Dwell on a block taller than twice the viewport can never be 50% in view. | Rule as written: ratio >= 0.5. Such a block never counts. Only the first element matching each block selector is observed; blocks that render after start are picked up on `load`. |
-| A26 | ง8.4 | Context features (`page_type`, `device`, `cart_value`) in the features snapshot? | Yes, those three, because the gate AUC baseline needs them per session and rules may use them. `product_id` and `country` are not duplicated there: they are on `page_view`. |
-| A27 | ง8.4 | Session-scoped features are per tab (sessionStorage). | A shipping-policy visit in another tab is not seen. Accepted: spec says sessionStorage, and it stores less than a cross-tab store. |
-| A28 | ง8.4 | "Tap" and "variant change" event types. | `repeated_taps_5s` counts `click` events (capture, passive). `variant_toggles_since_atc` counts `change` events bubbling from an element matching `variant_selector`. See S3. |
-| A29 | ง8.4 | Re-evaluation while dwelling. | A 1 s ticker runs only while a block is in view and the tab visible, so a dwell threshold can be crossed without other events. |
-| A30 | ง8.6 | Leaf on a feature the SDK does not know (A7), or a null feature such as `cart_value` before `/cart.js` returns. | The leaf is false. In an `all` the rule cannot fire; in an `any` the other branches still can. No error, no log. |
-| A31 | ง8.7 | `mode: "live"` in the config while live mode is not built. | The SDK behaves exactly as in shadow (renders nothing, `play` and `propensity` null) and logs `mode` as configured. Play selection (uniform, propensity = 1/plays) is left for Phase 1. |
-| A32 | ง8.7 | Format of `content_ref`. | Delivery and returns use the string in the config (`shipping_eta:DE`). Sizing has a product-id list only, so the ref is `size_chart:<product_id>`. |
-| A33 | ง8.7 | Arm is computed from `visitor_hash` (already salted) and salted again. | As specified: SHA-256(visitor_hash + holdout_salt). Computed once at boot. |
-| A34 | ง8.6 | Rule ties on `priority`. | Broken by rule id so the order is deterministic. Rules are sorted once at start. |
-| A35 | ง8.6 | Latency sample storage. | Up to 2,000 samples kept (then overwritten in place) so memory is bounded; p50 is the lower median; values in microseconds rounded to 0.1. |
-| A36 | ง8.4 | `page_summary` timing. | Queued on `pagehide` only (spec), once per page, before the final flush. A browser that skips `pagehide` (some mobile cases) loses the summary; `rule_fired` and outcomes are unaffected because they flush on `visibilitychange`. |
+| A17 | ยง8.1 | Consent is checked before the config is fetched, but `required_consent` lives in the config. | Init option `purposes` (default `["analytics"]`) gates the config fetch. After the fetch the config's `required_consent` is checked too; if it asks for more, the SDK stays inert and a later consent change retries. Nothing is stored before both pass. The config GET carries no identifier. |
+| A18 | ยง8.1 | What is `configBase`? | Config URL is `${configBase}/${shopId}.json`. Dev: `http://localhost:8080/config`. The API (M5) serves the same at `/v1/config/{shop_id}.json` as well as without the suffix. |
+| A19 | ยง8.3 | "Session cookie, 30 minutes of inactivity" : a pure session cookie has no inactivity timeout. | `ivay_sid` is written with `Max-Age=1800` and renewed on every touch (page load, each flush), so 30 idle minutes ends it. The pixel reads the same cookie. A new session id resets the sessionStorage state. |
+| A20 | ยง8.3 | Spec says Secure cookies. | `Secure` is added on https pages only, so `http://localhost` dev works in every browser. Production shops are https. |
+| A21 | ยง8.1 | "fetch, validate, cache" config. | No client-side cache: it would be another storage write. The config is served `Cache-Control` by the server, so the HTTP cache does the job. |
+| A22 | ยง4, A14 | SDK-side contract test. | The SDK cannot ship a JSON Schema validator in 10 KB, so `src/config.ts` has a hand-written validator. `tests/contract.test.ts` runs every shared fixture through it (valid must pass, invalid must fail; the manifest pointer is checked only on the API side) and validates envelopes the SDK builds against the real schema with Ajv (dev dependency only). |
+| A23 | ยง8.2 | Cookie provider has no change event. | Polls `document.cookie` once a second until granted, then stops. |
+| A24 | ยง8.8 | Fetch fallback headers. | No headers are set, so the request stays a CORS-simple `text/plain` POST, identical to sendBeacon, and needs no preflight. |
+| A25 | ยง8.4 | Dwell on a block taller than twice the viewport can never be 50% in view. | Rule as written: ratio >= 0.5. Such a block never counts. Only the first element matching each block selector is observed; blocks that render after start are picked up on `load`. |
+| A26 | ยง8.4 | Context features (`page_type`, `device`, `cart_value`) in the features snapshot? | Yes, those three, because the gate AUC baseline needs them per session and rules may use them. `product_id` and `country` are not duplicated there: they are on `page_view`. |
+| A27 | ยง8.4 | Session-scoped features are per tab (sessionStorage). | A shipping-policy visit in another tab is not seen. Accepted: spec says sessionStorage, and it stores less than a cross-tab store. |
+| A28 | ยง8.4 | "Tap" and "variant change" event types. | `repeated_taps_5s` counts `click` events (capture, passive). `variant_toggles_since_atc` counts `change` events bubbling from an element matching `variant_selector`. See S3. |
+| A29 | ยง8.4 | Re-evaluation while dwelling. | A 1 s ticker runs only while a block is in view and the tab visible, so a dwell threshold can be crossed without other events. |
+| A30 | ยง8.6 | Leaf on a feature the SDK does not know (A7), or a null feature such as `cart_value` before `/cart.js` returns. | The leaf is false. In an `all` the rule cannot fire; in an `any` the other branches still can. No error, no log. |
+| A31 | ยง8.7 | `mode: "live"` in the config while live mode is not built. | The SDK behaves exactly as in shadow (renders nothing, `play` and `propensity` null) and logs `mode` as configured. Play selection (uniform, propensity = 1/plays) is left for Phase 1. |
+| A32 | ยง8.7 | Format of `content_ref`. | Delivery and returns use the string in the config (`shipping_eta:DE`). Sizing has a product-id list only, so the ref is `size_chart:<product_id>`. |
+| A33 | ยง8.7 | Arm is computed from `visitor_hash` (already salted) and salted again. | As specified: SHA-256(visitor_hash + holdout_salt). Computed once at boot. |
+| A34 | ยง8.6 | Rule ties on `priority`. | Broken by rule id so the order is deterministic. Rules are sorted once at start. |
+| A35 | ยง8.6 | Latency sample storage. | Up to 2,000 samples kept (then overwritten in place) so memory is bounded; p50 is the lower median; values in microseconds rounded to 0.1. |
+| A36 | ยง8.4 | `page_summary` timing. | Queued on `pagehide` only (spec), once per page, before the final flush. A browser that skips `pagehide` (some mobile cases) loses the summary; `rule_fired` and outcomes are unaffected because they flush on `visibilitychange`. |
 | A37 | M3 test | The 49 to 51 percent arm-split test over 10,000 visitors. | With 10,000 visitors the standard deviation is 0.5 points, so 49 to 51 holds about 95% of the time for any random draw. The test uses a seeded generator so it is deterministic. The first seed tried (20240607) passed; no seed was searched for. Do not change the seed to "fix" a failure: it would mean `assignArm` changed. |
-| A38 | ง8.5 | Device classification. | Width below 768 px is `mobile`; otherwise a coarse pointer is `tablet`, else `desktop`. |
-| A39 | ง8.5 | Shopify `country`. | `Shopify.country` is the market or localization country the shopper selected, not a geolocation. That is what the content coverage index is keyed on, and it needs no extra lookup. |
-| A40 | ง8.5 | Cart attribute key. | `ivay_sid`, the same name as the cookie. It is written only when `/cart.js` (already fetched for the cart value) shows a different value, so there is no extra write per page. If `/cart.js` cannot be read, nothing is written. See S8. |
-| A41 | ง8.9 | How the pixel finds the session id. | First from the cart attribute in `data.checkout.attributes` (documented), then from `browser.cookie.get("ivay_sid")`. With neither it sends nothing, so no outcome exists for a shopper without a consented SDK session. Event ids are `pxstart_<sid>` / `pxorder_<sid>` so repeats deduplicate. |
-| A42 | ง8.5 | Add-to-cart outcome value. | `null`: the SDK does not know the line price. The session's cart value is in the feature snapshots. |
+| A38 | ยง8.5 | Device classification. | Width below 768 px is `mobile`; otherwise a coarse pointer is `tablet`, else `desktop`. |
+| A39 | ยง8.5 | Shopify `country`. | `Shopify.country` is the market or localization country the shopper selected, not a geolocation. That is what the content coverage index is keyed on, and it needs no extra lookup. |
+| A40 | ยง8.5 | Cart attribute key. | `ivay_sid`, the same name as the cookie. It is written only when `/cart.js` (already fetched for the cart value) shows a different value, so there is no extra write per page. If `/cart.js` cannot be read, nothing is written. See S8. |
+| A41 | ยง8.9 | How the pixel finds the session id. | First from the cart attribute in `data.checkout.attributes` (documented), then from `browser.cookie.get("ivay_sid")`. With neither it sends nothing, so no outcome exists for a shopper without a consented SDK session. Event ids are `pxstart_<sid>` / `pxorder_<sid>` so repeats deduplicate. |
+| A42 | ยง8.5 | Add-to-cart outcome value. | `null`: the SDK does not know the line price. The session's cart value is in the feature snapshots. |
 | A43 | M1 bug | `stop()` during the async start-up did not stop the boot. | Found when an M4 test leaked cookies into the next test. Fixed in `index.ts` (check after the digests) with a regression test. Not a test weakening. |
+| A44 | ยง9.2 | "Validate against the envelope schema" at runtime. | The API validates with the Pydantic models in `app/schemas.py` (strict, `extra=forbid`), not with a JSON Schema library, so the schema files need not ship in the image. `tests/test_contracts_pydantic.py` runs every shared fixture and 14 hand-made edge cases through both and requires agreement. Closes the API half of A14. |
+| A45 | ยง9.2 | Order of checks and status codes on `POST /v1/events`. | body size 413, JSON or schema 422 (never echoes the input), unknown shop 404, rate limit 429 (with `Retry-After`), Origin 403, then the insert in one transaction. Schema errors are therefore visible to any caller; they leak nothing but field paths. |
+| A46 | ยง9.3 | Origin check details. | Exact string match against `shop.allowed_origins`. A missing Origin header is refused (browsers always send it on cross-origin POSTs, so its absence means a non-browser client). `OPTIONS` preflight answers for the union of all shops' origins because a preflight has no shop id. The SDK never preflights. See S10 for the pixel. |
+| A47 | ยง9.3 | "Basic rate limit per shop." | In-memory sliding window per shop, default 600 requests per minute (`RATE_LIMIT_PER_MINUTE`). It is per process, so N workers or replicas allow N times that. Unknown shop ids share one bucket so probing cannot grow memory. Fine for a pilot; a shared store is needed before scale. |
+| A48 | ยง9.2 | The webhook must find the shop but the `shop` table has no domain column (columns are fixed by the spec). | The webhook URL carries `?shop_id=<id>`, set when the merchant creates the subscription. The HMAC then proves the sender. |
+| A49 | ยง9.1 | What `webhook_secret_ref` holds. | The name of an environment variable, which must start with `IVAY_WEBHOOK_SECRET_` (so a bad row cannot read `DATABASE_URL`). The secret itself is never in the database or the repo. No secret configured or set means 401. |
+| A50 | ยง9.2 | "Deduplicate against the pixel's outcome by session." | A partial unique index allows one `order_completed` per (shop, session). The webhook wins: it replaces a pixel row (taking the order value) and is never replaced by one. Redelivery changes nothing. The pixel can report a different value (presentment currency) than the webhook (shop currency, S11), so the webhook value is authoritative. |
+| A51 | ยง9.2 | Webhook topics and response. | Only `orders/create` and `orders/paid` are processed. Other topics and orders without a usable `ivay_sid` are acknowledged with 204 and ignored, so Shopify does not retry them. A missing or bad signature is 401, which Shopify treats as a failure. |
+| A52 | ยง9.3 | Client timestamps. | `received_at` is always the server clock. The client `ts` is stored as given; above year 2100 it is a 422. Analysis should prefer `received_at` when `ts` is implausible. |
+| A53 | ยง7.1, A15 | The 50 KB config limit. | Enforced when serving: an over-limit or invalid stored config is a generic 500 (logged), so a bad row makes the SDK inert rather than misbehave. The full fixture config is 1.7 KB. |
+| A54 | ยง9.2 | Config caching. | `Cache-Control: public, max-age=60` plus `ETag` and 304. A kill switch therefore reaches a page within a minute of the next page load. `.json` suffix accepted because the SDK appends it. |
+| A55 | ยง9.3 | Public surface. | `/docs`, `/redoc` and `/openapi.json` are disabled. |
+| A56 | ยง9.1 | `session_rollup` definitions. | Final session-scoped features come from the latest snapshot across page summaries and decision logs (so a session whose `pagehide` summary was lost still has values). `arm` is taken from the first decision; sessions with no decision have a null arm, so M8 recomputes the arm from `visitor_hash` and the salt. "Touched shipping/returns/size" is the session feature OR a dwell above zero on the block. |
+| A57 | env | Test database lifecycle. | `tests/conftest.py` runs `alembic downgrade base` then `upgrade head` on `ivay_test` once per session and truncates per test. That database is wiped on every run; never point `TEST_DATABASE_URL` at a real one. The container runs `alembic upgrade head` on start. |
+| A58 | env | Python version. | mypy caught PEP 695 generics (3.12 syntax) in code for a 3.11 image. Replaced with `TypeVar`. |
+| A59 | env | Test DB host. | The test default is `127.0.0.1`, not `localhost`: on this Windows machine `localhost` costs about 2.1 s per connection (IPv6 attempt first), which made the suite several times slower. |
 
 ## Contract fixtures
 
@@ -127,6 +143,22 @@ Each entry says VERIFIED (read in shopify.dev docs during this build) or UNVERIF
   no documented cross-theme DOM cart event, and none is invented. Themes that add to cart from a
   button click without a form submit are not detected. Check on the pilot theme. A submit is an attempt:
   a sold-out rejection still counts.
+- **S9 Order webhook, partly VERIFIED (docs)**: HMAC is base64 HMAC-SHA256 of the raw body keyed with the
+  app's client secret in the `X-Shopify-Hmac-SHA256` header; success is a 2xx (docs say 200 OK; we send 204);
+  Shopify times out after 5 s. The Order resource documents `note_attributes` as `[{name, value}]` and
+  `total_price` as a string in the shop currency. UNVERIFIED: that the `orders/create` and `orders/paid`
+  webhook bodies contain `note_attributes` with the `ivay_sid` the SDK wrote (the webhook payload examples
+  were not in the page we could read), and that they do for the API version the subscription uses. On a
+  real shop: place a test order from a session with the SDK running, capture the webhook body, and confirm
+  `note_attributes` and `total_price`. Also confirm 204 is accepted as success.
+- **S10 Origin of pixel requests, UNVERIFIED**: the custom pixel runs in Shopify's sandbox, and the `Origin`
+  header its `fetch` sends (the shop domain, `null`, or a Shopify domain) was not found in the docs. The
+  API refuses any Origin not in `shop.allowed_origins`, so pixel outcomes are rejected until that value is
+  added. Check the API access in the pilot (a 403 on `/v1/events` from a checkout) and add the observed
+  origin. Until then the webhook still records `order_completed`.
+- **S11 Currency, UNVERIFIED**: the pixel sends `data.checkout.totalPrice.amount` and the webhook sends
+  `total_price` (shop currency). For a shop selling in several currencies these differ. The gate report
+  does not use order values; do not compare them without converting.
 - **S2 Consent API timing, UNVERIFIED**: the SDK does not call `loadFeatures`; it assumes the
   theme or Shopify's banner has loaded the API, and treats a missing API as "not granted". Check on a
   real shop: (a) `Shopify.customerPrivacy` exists when the SDK script runs, or how late it appears
