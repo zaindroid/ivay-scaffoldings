@@ -1,0 +1,175 @@
+{
+  "_comment": "SAMPLE DATA, not a real shop. Written from the documented Admin GraphQL schema to exercise the audit (NOTES S13); it is not a recording of a live response.",
+  "IvayShippingAudit": [
+    {
+      "deliveryProfiles": {
+        "pageInfo": { "hasNextPage": true, "endCursor": "cursor-1" },
+        "nodes": [
+          {
+            "id": "gid://shopify/DeliveryProfile/1",
+            "name": "General profile",
+            "profileLocationGroups": [
+              {
+                "locationGroupZones": {
+                  "pageInfo": { "hasNextPage": false },
+                  "nodes": [
+                    {
+                      "zone": {
+                        "id": "gid://shopify/DeliveryZone/11",
+                        "name": "Germany and Austria",
+                        "countries": [
+                          { "code": { "countryCode": "DE", "restOfWorld": false } },
+                          { "code": { "countryCode": "AT", "restOfWorld": false } }
+                        ]
+                      },
+                      "methodDefinitions": {
+                        "pageInfo": { "hasNextPage": false },
+                        "nodes": [
+                          {
+                            "id": "gid://shopify/DeliveryMethodDefinition/111",
+                            "active": true,
+                            "rateProvider": {
+                              "__typename": "DeliveryRateDefinition",
+                              "price": { "amount": "4.9", "currencyCode": "EUR" }
+                            }
+                          },
+                          {
+                            "id": "gid://shopify/DeliveryMethodDefinition/112",
+                            "active": false,
+                            "rateProvider": {
+                              "__typename": "DeliveryRateDefinition",
+                              "price": { "amount": "12.0", "currencyCode": "EUR" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "zone": {
+                        "id": "gid://shopify/DeliveryZone/12",
+                        "name": "France",
+                        "countries": [{ "code": { "countryCode": "FR", "restOfWorld": false } }]
+                      },
+                      "methodDefinitions": {
+                        "pageInfo": { "hasNextPage": false },
+                        "nodes": [
+                          {
+                            "id": "gid://shopify/DeliveryMethodDefinition/121",
+                            "active": true,
+                            "rateProvider": { "__typename": "DeliveryParticipant" }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "zone": {
+                        "id": "gid://shopify/DeliveryZone/13",
+                        "name": "Switzerland",
+                        "countries": [{ "code": { "countryCode": "CH", "restOfWorld": false } }]
+                      },
+                      "methodDefinitions": {
+                        "pageInfo": { "hasNextPage": false },
+                        "nodes": [
+                          {
+                            "id": "gid://shopify/DeliveryMethodDefinition/131",
+                            "active": false,
+                            "rateProvider": {
+                              "__typename": "DeliveryRateDefinition",
+                              "price": { "amount": "9.9", "currencyCode": "EUR" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "zone": {
+                        "id": "gid://shopify/DeliveryZone/14",
+                        "name": "Rest of world",
+                        "countries": [{ "code": { "countryCode": null, "restOfWorld": true } }]
+                      },
+                      "methodDefinitions": {
+                        "pageInfo": { "hasNextPage": false },
+                        "nodes": [
+                          {
+                            "id": "gid://shopify/DeliveryMethodDefinition/141",
+                            "active": true,
+                            "rateProvider": {
+                              "__typename": "DeliveryRateDefinition",
+                              "price": { "amount": "19.0", "currencyCode": "EUR" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "deliveryProfiles": {
+        "pageInfo": { "hasNextPage": false, "endCursor": null },
+        "nodes": [
+          {
+            "id": "gid://shopify/DeliveryProfile/2",
+            "name": "Bulky items",
+            "profileLocationGroups": [
+              {
+                "locationGroupZones": {
+                  "pageInfo": { "hasNextPage": false },
+                  "nodes": [
+                    {
+                      "zone": {
+                        "id": "gid://shopify/DeliveryZone/21",
+                        "name": "Germany",
+                        "countries": [{ "code": { "countryCode": "DE", "restOfWorld": false } }]
+                      },
+                      "methodDefinitions": {
+                        "pageInfo": { "hasNextPage": false },
+                        "nodes": []
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "IvayReturnsAudit": [
+    {
+      "shop": {
+        "shopPolicies": [
+          { "type": "PRIVACY_POLICY", "url": "https://demo.example/policies/privacy-policy", "body": "<p>Privacy</p>" },
+          { "type": "REFUND_POLICY", "url": "https://demo.example/policies/refund-policy", "body": "<p>30 days to return unworn items.</p>" }
+        ]
+      }
+    }
+  ],
+  "IvaySizingAudit": [
+    {
+      "products": {
+        "pageInfo": { "hasNextPage": true, "endCursor": "cursor-p1" },
+        "nodes": [
+          { "id": "gid://shopify/Product/1", "metafield": { "value": "<table><tr><td>S</td></tr></table>" } },
+          { "id": "gid://shopify/Product/2", "metafield": null },
+          { "id": "gid://shopify/Product/3", "metafield": { "value": "   " } }
+        ]
+      }
+    },
+    {
+      "products": {
+        "pageInfo": { "hasNextPage": false, "endCursor": null },
+        "nodes": [
+          { "id": "gid://shopify/Product/4", "metafield": { "value": "Runs small, size up." } },
+          { "id": "gid://shopify/Product/5", "metafield": null }
+        ]
+      }
+    }
+  ]
+}

@@ -93,6 +93,12 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 | A57 | env | Test database lifecycle. | `tests/conftest.py` runs `alembic downgrade base` then `upgrade head` on `ivay_test` once per session and truncates per test. That database is wiped on every run; never point `TEST_DATABASE_URL` at a real one. The container runs `alembic upgrade head` on start. |
 | A58 | env | Python version. | mypy caught PEP 695 generics (3.12 syntax) in code for a 3.11 image. Replaced with `TypeVar`. |
 | A59 | env | Test DB host. | The test default is `127.0.0.1`, not `localhost`: on this Windows machine `localhost` costs about 2.1 s per connection (IPv6 attempt first), which made the suite several times slower. |
+| A60 | §9.4 | What "complete rates" means for a shipping country. | A country is covered when, in every delivery profile that lists it, a zone containing it has at least one active method with a rate: a fixed price (0.00 counts, free shipping is a rate) or a carrier-calculated rate. A country missing a rate in any profile that ships to it is incomplete, which is the conservative reading. The rest-of-world zone is not a country and is not counted. The script prints the complete and incomplete country codes so they can seed `content.delivery_uncertainty.by_country`. |
+| A61 | §9.4 | "Share of products with a size chart." Shopify has no native size chart object. | A product is covered when a configurable metafield (default `custom.size_chart`, set with `SHOPIFY_SIZE_CHART_METAFIELD`) has a non-empty value. Only active products are counted (shoppers cannot see others). See S14. |
+| A62 | §9.4 | "Whether a return policy exists." | Covered 1 of 1 when a `REFUND_POLICY` shop policy has a non-empty body, else 0 of 1. The body is read only to test that it is not blank; it is neither stored nor printed. |
+| A63 | §9.4 | "Dry mode." | `--dry` replays `api/app/platforms/sample_data/dry_run.json` through the real Shopify platform code, with no network and no credentials, and the output is labelled `DRY RUN`. Without `--dry` and without credentials the script prints what to set and exits 2. |
+| A64 | §9.4 | Truncated connections. | Nested connections (zones, methods) are read 50 at a time without paging. If one reports `hasNextPage`, the audit adds a WARNING to its output instead of silently undercounting. Top-level pages (profiles, products) are followed to the end, with a 400-page guard that also warns. |
+| A65 | env | `httpx` is now a runtime dependency of the API package (the Shopify client uses it); `pytest-asyncio` joined the dev extras with `asyncio_mode = "auto"`. | No effect on the Phase 0 endpoints. |
 
 ## Contract fixtures
 
@@ -159,6 +165,23 @@ Each entry says VERIFIED (read in shopify.dev docs during this build) or UNVERIF
 - **S11 Currency, UNVERIFIED**: the pixel sends `data.checkout.totalPrice.amount` and the webhook sends
   `total_price` (shop currency). For a shop selling in several currencies these differ. The gate report
   does not use order values; do not compare them without converting.
+- **S12 Admin GraphQL field names, VERIFIED (docs, names only)**: `deliveryProfiles(first, after)` with
+  `pageInfo` and `nodes`; `DeliveryProfile.profileLocationGroups`; `locationGroupZones` with `zone`
+  (`DeliveryZone`: `id`, `name`, `countries`) and `methodDefinitions` (`DeliveryMethodDefinition`: `active`,
+  `id`, `name`, `rateProvider`, a union of `DeliveryParticipant` and `DeliveryRateDefinition`, whose `price` is
+  `MoneyV2!`); `DeliveryCountry.code` with `countryCode` and `restOfWorld`; `shop.shopPolicies` with `type`
+  (`REFUND_POLICY`, `SHIPPING_POLICY` ...), `url`, `body`; `products(first, after, query)` and
+  `Product.metafield(namespace, key)` returning `value`. Scopes: `read_legal_policies` (documented),
+  shipping objects need a shipping scope (`read_shipping` assumed), `read_products`.
+- **S13 Audit query shape, UNVERIFIED on a live shop**: the docs pages read list field names but not every
+  argument or nesting (for example `first:` on `locationGroupZones`, `pageInfo` on the nested connections, the
+  `status:active` product filter). The fixtures in `api/app/platforms/sample_data` and the test fixtures were
+  WRITTEN FROM THE DOCUMENTED SCHEMA, not recorded from a live shop. The first live run may return a GraphQL
+  error (the script prints it); fix the query in `app/platforms/shopify.py` accordingly. Also confirm the
+  Admin API version default (`2025-01`) is still supported.
+- **S14 Where the pilot shop keeps size charts, UNVERIFIED**: the audit assumes a product metafield. Ask
+  the merchant: a metafield (which namespace and key), a page linked from the product, an app (for example a
+  size chart app), or an image in the description. Only the first is measured today.
 - **S2 Consent API timing, UNVERIFIED**: the SDK does not call `loadFeatures`; it assumes the
   theme or Shopify's banner has loaded the API, and treats a missing API as "not granted". Check on a
   real shop: (a) `Shopify.customerPrivacy` exists when the SDK script runs, or how late it appears

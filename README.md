@@ -56,8 +56,8 @@ that implements them.
 | Milestone | State |
 | --------- | ----- |
 | M0 Scaffold and contracts | done (see NOTES.md for what could not be verified) |
-| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter, M5 backend | done |
-| M6 to M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
+| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter, M5 backend, M6 merchant audit | done |
+| M7 to M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
 
 ## Installing the checkout pixel
 

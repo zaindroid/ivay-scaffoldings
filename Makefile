@@ -3,7 +3,7 @@ VENV ?= .venv
 VBIN := $(if $(wildcard $(VENV)/Scripts),$(VENV)/Scripts,$(VENV)/bin)
 PY   := $(VBIN)/python
 
-.PHONY: install up down local-db test lint e2e size simulate gates
+.PHONY: install up down local-db test lint audit-dry e2e size simulate gates
 
 install: ## create the virtualenv and install the API with dev tools
 	$(or $(PYTHON),python3) -m venv $(VENV)
@@ -19,12 +19,15 @@ local-db: ## Docker-free Postgres for tests (see NOTES.md)
 	scripts/local_db.sh
 
 lint:
-	cd api && ../$(VBIN)/ruff check . && ../$(VBIN)/mypy app tests
+	cd api && ../$(VBIN)/ruff check . ../scripts && ../$(VBIN)/mypy app tests
 	cd sdk && npx tsc --noEmit
 
 test: ## API tests (needs Postgres: `make up` or `make local-db`) and SDK tests
 	cd api && ../$(VBIN)/pytest -q
 	cd sdk && npx vitest run
+
+audit-dry: ## merchant data audit on sample data (no network, no credentials)
+	$(PY) scripts/audit_merchant_data.py --dry
 
 # Later milestones. They fail loudly rather than pretending to pass.
 e2e:

@@ -86,3 +86,20 @@ comparison or the Origin check makes 4 and 5 tests fail respectively.
 beacon returns 204, row appears in `session_rollup`.
 **Bug found on the way**: Python 3.12 syntax in code for a 3.11 image (caught by mypy, NOTES A58).
 **Blocked**: nothing. UNVERIFIED: S9 (webhook payload fields), S10 (pixel Origin), S11 (currency).
+
+## M6: Merchant data audit
+**Built**: `app/platforms/base.py` (`MerchantPlatform` protocol, `Coverage`, `ShippingCoverage`),
+`shopify.py` (`ShopifyAdminClient` over an injected httpx client with retry on throttling, and
+`ShopifyPlatform` with `audit_shipping`, `audit_returns`, `audit_sizing`), `shopware.py` (stub raising
+`NotImplementedError`), `replay.py` (fixture-replaying client), sample data, `scripts/audit_merchant_data.py`
+(read-only, `--dry`, `--json`, clear refusal without credentials), `make audit-dry`.
+**Tested**: API 176 tests (34 new), SDK 145. Shipping rule on a two-profile, paginated fixture (DE made
+incomplete by a second profile, CH by an inactive method, FR by a carrier rate, a zero price counts, rest of
+world excluded), truncated nested pages reported, empty shop, returns policy in five present/absent shapes,
+sizing over pages with blank and null metafields, configurable metafield, read-only guarantee (no `mutation`
+or `subscription` anywhere in the queries or the script), protocol conformance, the HTTP client on a mock
+transport (URL, token header, JSON body, GraphQL errors, 401/403, 500, non-JSON, network failure, token
+never in any error, throttle retry with `Retry-After`, retry limit), the whole platform over the mock
+transport, and the script run as a subprocess: dry text and JSON, no credentials, one credential missing.
+**Blocked**: nothing. UNVERIFIED: S13 (live query shape), S14 (size charts). Fixtures are written from the
+documented schema, not recorded (stated in the fixture and in NOTES S13).
