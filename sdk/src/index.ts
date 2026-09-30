@@ -2,9 +2,11 @@ import { cookieConsent } from "./consent/cookie";
 import { customConsent } from "./consent/custom";
 import { shopifyConsent } from "./consent/shopify";
 import { fetchConfig } from "./config";
+import { assignArm } from "./decision";
 import { createFeatures } from "./features";
 import { createGuard } from "./guard";
 import { getVisitorId, randomId, touchSession, visitorHash } from "./identity";
+import { createRuleEngine } from "./rules";
 import { createSessionStore } from "./session-store";
 import { defaultCollectors } from "./signals/registry";
 import { createTransport } from "./transport";
@@ -53,7 +55,11 @@ export function initIvay(opts: InitOptions): { stop(): void } {
     const hash = await visitorHash(vid, config.holdout_salt);
     const store = createSessionStore(sid);
     const pageId = randomId(12);
+    const arm = await assignArm(hash, config.holdout_salt, config.holdout_bps);
+    // Late-bound: the page summary needs the feature set and engine created below.
+    let summary: (() => void) | undefined;
     const transport = createTransport({
+      beforePageHide: () => summary?.(),
       url: config.log_endpoint,
       shopId: config.shop_id,
       identity: () => ({ visitor_hash: hash, session_id: touchSession(), page_id: pageId }),
@@ -66,11 +72,18 @@ export function initIvay(opts: InitOptions): { stop(): void } {
     transport.send({ type: "page_view", ...page });
     const cartSubs: Array<() => void> = [];
     platform.onAddToCart(() => cartSubs.forEach((f) => guard.wrap(f)()));
+    const engine = createRuleEngine({ config, page, session: store, arm, send: transport.send });
     const features = createFeatures(
       { config, page, session: store, onAddToCart: (cb) => cartSubs.push(cb) },
       defaultCollectors(),
-      () => {},
+      guard.wrap(engine.evaluate),
     );
+    let summarised = false;
+    summary = () => {
+      if (summarised) return;
+      summarised = true;
+      transport.send({ type: "page_summary", features: features.snapshot(), ...engine.stats() });
+    };
     stops.push(features.stop);
     features.start();
   }

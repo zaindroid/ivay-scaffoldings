@@ -11,6 +11,8 @@ export interface TransportOptions {
   shopId: string;
   /** Identity fields for the envelope, read at flush time. */
   identity(): { visitor_hash?: string; session_id: string; page_id?: string };
+  /** Runs on pagehide before the final flush, so the caller can queue a last event. */
+  beforePageHide?: () => void;
 }
 
 function post(url: string, body: string): void {
@@ -55,7 +57,14 @@ export function createTransport(o: TransportOptions): Transport {
     }
   }
 
-  const onHide = () => flush();
+  const onHide = () => {
+    try {
+      o.beforePageHide?.();
+    } catch {
+      /* never block the flush */
+    }
+    flush();
+  };
   const onVis = () => {
     if (document.visibilityState === "hidden") flush();
   };

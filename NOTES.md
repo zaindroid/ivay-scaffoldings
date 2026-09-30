@@ -63,6 +63,14 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 | A27 | §8.4 | Session-scoped features are per tab (sessionStorage). | A shipping-policy visit in another tab is not seen. Accepted: spec says sessionStorage, and it stores less than a cross-tab store. |
 | A28 | §8.4 | "Tap" and "variant change" event types. | `repeated_taps_5s` counts `click` events (capture, passive). `variant_toggles_since_atc` counts `change` events bubbling from an element matching `variant_selector`. See S3. |
 | A29 | §8.4 | Re-evaluation while dwelling. | A 1 s ticker runs only while a block is in view and the tab visible, so a dwell threshold can be crossed without other events. |
+| A30 | §8.6 | Leaf on a feature the SDK does not know (A7), or a null feature such as `cart_value` before `/cart.js` returns. | The leaf is false. In an `all` the rule cannot fire; in an `any` the other branches still can. No error, no log. |
+| A31 | §8.7 | `mode: "live"` in the config while live mode is not built. | The SDK behaves exactly as in shadow (renders nothing, `play` and `propensity` null) and logs `mode` as configured. Play selection (uniform, propensity = 1/plays) is left for Phase 1. |
+| A32 | §8.7 | Format of `content_ref`. | Delivery and returns use the string in the config (`shipping_eta:DE`). Sizing has a product-id list only, so the ref is `size_chart:<product_id>`. |
+| A33 | §8.7 | Arm is computed from `visitor_hash` (already salted) and salted again. | As specified: SHA-256(visitor_hash + holdout_salt). Computed once at boot. |
+| A34 | §8.6 | Rule ties on `priority`. | Broken by rule id so the order is deterministic. Rules are sorted once at start. |
+| A35 | §8.6 | Latency sample storage. | Up to 2,000 samples kept (then overwritten in place) so memory is bounded; p50 is the lower median; values in microseconds rounded to 0.1. |
+| A36 | §8.4 | `page_summary` timing. | Queued on `pagehide` only (spec), once per page, before the final flush. A browser that skips `pagehide` (some mobile cases) loses the summary; `rule_fired` and outcomes are unaffected because they flush on `visibilitychange`. |
+| A37 | M3 test | The 49 to 51 percent arm-split test over 10,000 visitors. | With 10,000 visitors the standard deviation is 0.5 points, so 49 to 51 holds about 95% of the time for any random draw. The test uses a seeded generator so it is deterministic. The first seed tried (20240607) passed; no seed was searched for. Do not change the seed to "fix" a failure: it would mean `assignArm` changed. |
 
 ## Contract fixtures
 

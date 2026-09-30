@@ -32,3 +32,18 @@ down-to-up only, 30 s decay, passive), variant toggles and reset on add-to-cart,
 (unit and through `initIvay`), throttling, nothing written before consent.
 **Bundle**: 4,343 bytes gzipped.
 **Blocked**: nothing. UNVERIFIED: S3 (theme variant change events).
+
+## M3: Rules and decisions
+**Built**: `rules.ts` (condition interpreter, engine: eligibility by page type, once per friction
+state per session via the session store, priority order, consecutive `fire_seq`, latency sampling),
+`decision.ts` (arm assignment, coverage lookup, decision object), `page_summary` on pagehide
+(transport `beforePageHide` hook), wiring in `index.ts`.
+**Tested**: SDK 113 tests (30 new), API 8. Each starting rule fires and does not fire on noise
+(including dwell alone, reversals alone, other page types); no re-fire on 50 repeated ticks, on a
+later page, or for a second rule of the same state; fire_seq and priority order; arm stable per
+visitor, matches the spec formula, 0 and 10000 bps edges, 10,000-visitor split within 49 to 51%
+(seeded, NOTES A37); has_content false when coverage is missing; latency count/p50/max;
+end-to-end shipping-policy round trip through `initIvay` (rule fires exactly once, one summary,
+every sent batch validates against the envelope schema).
+**Bundle**: 5,136 bytes gzipped.
+**Blocked**: nothing.
