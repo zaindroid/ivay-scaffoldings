@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your cart | Ivay demo store</title>
+</head>
+<body>
+  <header><a href="/">Ivay demo store</a></header>
+  <main>
+    <h1>Your cart</h1>
+    <form method="post" action="/cart">
+      <p>Ivay Tee, size M: 29.00 EUR</p>
+      <button type="submit" name="checkout">Check out</button>
+    </form>
+    <section data-ivay-block="shipping">
+      <h2>Delivery</h2>
+      <p>Free delivery in Germany within 2 to 4 working days.</p>
+    </section>
+    <section data-ivay-block="returns">
+      <h2>Returns</h2>
+      <p>30 days to return.</p>
+    </section>
+  </main>
+</body>
+</html>

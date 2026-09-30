@@ -47,3 +47,19 @@ end-to-end shipping-policy round trip through `initIvay` (rule fires exactly onc
 every sent batch validates against the envelope schema).
 **Bundle**: 5,136 bytes gzipped.
 **Blocked**: nothing.
+
+## M4: Shopify adapter and outcomes
+**Built**: `platform/shopify.ts` (page type from config URL patterns incl. locale prefix, product id,
+country, device, one `/cart.js` request per page, add-to-cart via form submit, cart attribute write
+only when different), `pixel/shopify-custom-pixel.js` (checkout_started / checkout_completed to an
+`outcome` event, session id from the cart attribute with cookie fallback), `initIvay` platform option
+(`"shopify"`, adapter or factory), add-to-cart `outcome` events, `cart_value` into the features,
+static demo store pages (`demo-store/products/tee.html`, `cart.html`, both policy pages).
+**Tested**: SDK 145 tests (32 new), API 8. Adapter tests run against the demo store markup and assert the
+default selectors match it; pixel tests run the real snippet against a fake `analytics`/`browser` and
+validate the payload against the envelope schema, including "no session id, nothing sent" and "no
+email/address in the payload". Integration: with consent the page view, cart value, cart attribute
+write and add-to-cart outcome happen; without consent there is no `/cart.js` request, no write, no cookie.
+Bug found and fixed on the way: `stop()` during async start-up did not stop the boot (NOTES A43).
+**Bundle**: 5,861 bytes gzipped.
+**Blocked**: nothing. Shopify facts: S4 to S6 verified from docs, S7 and S8 UNVERIFIED, list in NOTES.md.

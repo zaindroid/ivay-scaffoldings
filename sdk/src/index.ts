@@ -7,6 +7,7 @@ import { createFeatures } from "./features";
 import { createGuard } from "./guard";
 import { getVisitorId, randomId, touchSession, visitorHash } from "./identity";
 import { createRuleEngine } from "./rules";
+import { shopifyPlatform } from "./platform/shopify";
 import { createSessionStore } from "./session-store";
 import { defaultCollectors } from "./signals/registry";
 import { createTransport } from "./transport";
@@ -53,9 +54,11 @@ export function initIvay(opts: InitOptions): { stop(): void } {
     const vid = getVisitorId();
     const sid = touchSession();
     const hash = await visitorHash(vid, config.holdout_salt);
+    const arm = await assignArm(hash, config.holdout_salt, config.holdout_bps);
+    // stop() may have been called while the digests were pending: create nothing more.
+    if (stopped) return;
     const store = createSessionStore(sid);
     const pageId = randomId(12);
-    const arm = await assignArm(hash, config.holdout_salt, config.holdout_bps);
     // Late-bound: the page summary needs the feature set and engine created below.
     let summary: (() => void) | undefined;
     const transport = createTransport({
@@ -66,12 +69,18 @@ export function initIvay(opts: InitOptions): { stop(): void } {
     });
     stops.push(transport.stop);
     // 5. page_view, then collectors. Rules and decisions arrive in M3.
-    const platform = opts.platform;
-    if (!platform) return;
+    const p = opts.platform;
+    if (!p) return;
+    const platform = p === "shopify" ? shopifyPlatform(config) : typeof p === "function" ? p(config) : p;
     const page = platform.getPageContext();
     transport.send({ type: "page_view", ...page });
     const cartSubs: Array<() => void> = [];
-    platform.onAddToCart(() => cartSubs.forEach((f) => guard.wrap(f)()));
+    platform.onAddToCart(
+      guard.wrap(() => {
+        transport.send({ type: "outcome", kind: "add_to_cart", value: null, source: "sdk" });
+        cartSubs.forEach((f) => guard.wrap(f)());
+      }),
+    );
     const engine = createRuleEngine({ config, page, session: store, arm, send: transport.send });
     const features = createFeatures(
       { config, page, session: store, onAddToCart: (cb) => cartSubs.push(cb) },
@@ -86,6 +95,9 @@ export function initIvay(opts: InitOptions): { stop(): void } {
     };
     stops.push(features.stop);
     features.start();
+    // Cart value for the features, and the session id on the cart so the order carries it.
+    void platform.getCart().then(guard.wrap((c: { value: number | null }) => features.setContext({ cart_value: c.value })), () => {});
+    guard.wrap(() => platform.setCartAttribute("ivay_sid", sid))();
   }
 
   // 1. Consent provider comes from the init options, not the remote config.

@@ -158,3 +158,17 @@ describe("collectors start after consent", () => {
     expect(JSON.parse(sessionStorage.getItem("ivay_s")!).features.cart_adds).toBe(1);
   });
 });
+
+describe("stop during start-up", () => {
+  it("stop() while the config is in flight creates nothing afterwards", async () => {
+    let resolve!: (v: unknown) => void;
+    vi.stubGlobal("fetch", () => new Promise((r) => (resolve = r)));
+    const h = initIvay(opts(() => true));
+    h.stop();
+    resolve({ ok: true, json: async () => fullConfig() });
+    await new Promise((r) => setTimeout(r, 30));
+    window.dispatchEvent(new Event("pagehide"));
+    expect(storageEmpty()).toBe(true);
+    expect(beacons).toHaveLength(0);
+  });
+});

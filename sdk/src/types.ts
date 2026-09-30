@@ -121,7 +121,7 @@ export interface PlatformAdapter {
   getPageContext(): PageContext;
   getCart(): Promise<{ value: number | null }>;
   onAddToCart(cb: () => void): void;
-  setCartAttribute(key: string, value: string): void;
+  setCartAttribute(key: string, value: string): void | Promise<void>;
 }
 
 export interface SessionState {
@@ -174,5 +174,6 @@ export interface InitOptions {
   consent: ConsentOptions;
   /** Purposes required before anything happens. The config may add to these. Default ["analytics"]. */
   purposes?: string[];
-  platform?: PlatformAdapter;
+  /** "shopify" uses the built-in adapter; a function receives the validated config. */
+  platform?: "shopify" | PlatformAdapter | ((config: ShopConfig) => PlatformAdapter);
 }

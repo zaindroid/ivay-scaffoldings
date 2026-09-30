@@ -71,6 +71,12 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 | A35 | §8.6 | Latency sample storage. | Up to 2,000 samples kept (then overwritten in place) so memory is bounded; p50 is the lower median; values in microseconds rounded to 0.1. |
 | A36 | §8.4 | `page_summary` timing. | Queued on `pagehide` only (spec), once per page, before the final flush. A browser that skips `pagehide` (some mobile cases) loses the summary; `rule_fired` and outcomes are unaffected because they flush on `visibilitychange`. |
 | A37 | M3 test | The 49 to 51 percent arm-split test over 10,000 visitors. | With 10,000 visitors the standard deviation is 0.5 points, so 49 to 51 holds about 95% of the time for any random draw. The test uses a seeded generator so it is deterministic. The first seed tried (20240607) passed; no seed was searched for. Do not change the seed to "fix" a failure: it would mean `assignArm` changed. |
+| A38 | §8.5 | Device classification. | Width below 768 px is `mobile`; otherwise a coarse pointer is `tablet`, else `desktop`. |
+| A39 | §8.5 | Shopify `country`. | `Shopify.country` is the market or localization country the shopper selected, not a geolocation. That is what the content coverage index is keyed on, and it needs no extra lookup. |
+| A40 | §8.5 | Cart attribute key. | `ivay_sid`, the same name as the cookie. It is written only when `/cart.js` (already fetched for the cart value) shows a different value, so there is no extra write per page. If `/cart.js` cannot be read, nothing is written. See S8. |
+| A41 | §8.9 | How the pixel finds the session id. | First from the cart attribute in `data.checkout.attributes` (documented), then from `browser.cookie.get("ivay_sid")`. With neither it sends nothing, so no outcome exists for a shopper without a consented SDK session. Event ids are `pxstart_<sid>` / `pxorder_<sid>` so repeats deduplicate. |
+| A42 | §8.5 | Add-to-cart outcome value. | `null`: the SDK does not know the line price. The session's cart value is in the feature snapshots. |
+| A43 | M1 bug | `stop()` during the async start-up did not stop the boot. | Found when an M4 test leaked cookies into the next test. Fixed in `index.ts` (check after the digests) with a regression test. Not a test weakening. |
 
 ## Contract fixtures
 
@@ -92,6 +98,35 @@ Each entry says VERIFIED (read in shopify.dev docs during this build) or UNVERIF
   variant inputs fire a bubbling DOM `change` event. Dawn-style themes using `variant-selects` do,
   but themes that swap variants with custom JS may not. Check on the pilot theme that
   `variant_toggles_since_atc` increments when a shopper picks a size, and adjust the selector in config.
+- **S4 `/cart.js` amount units, VERIFIED (docs)**: `total_price` is an integer in the smallest unit of
+  the presentment currency (cents) with a `currency` field; `attributes` is an object. The SDK divides
+  by 100. UNVERIFIED: zero-decimal currencies (JPY, KRW). Check the value on a shop in such a currency.
+- **S5 Cart attributes, VERIFIED (docs)**: `POST /cart/update.js` with `{"attributes": {"key": "value"}}`
+  and the attribute comes back in `attributes`. UNVERIFIED on a real shop: (a) that it reaches the order
+  (Admin API `customAttributes` / webhook `note_attributes`); (b) whether the shopper sees it
+  (checkout, order status page, emails) or only the merchant in the order admin. If shoppers see it,
+  consider a `_`-prefixed key and change `IVAY_ATTR` together with the webhook reader.
+- **S6 Checkout events, VERIFIED (docs)**: `checkout_started` and `checkout_completed` are standard
+  events; `data.checkout.totalPrice.amount` (number or null), `data.checkout.attributes`
+  (`[{key, value}]`), `data.checkout.token`, `data.checkout.order.id` (only on completed).
+  Custom pixels use `analytics.subscribe(name, handler)`; `browser.cookie.get(name)` is async and
+  reads the top frame's cookies; `browser.sendBeacon` is deprecated in favour of `fetch` with
+  `keepalive: true` (used). UNVERIFIED: whether the storefront `ivay_sid` cookie is readable from the
+  checkout context on this shop (why the cart attribute is primary); the custom pixel "Permission"
+  setting (set to Analytics so it follows consent); the page for custom pixel sandbox limits returned 404, so network
+  access to a third-party origin from the sandbox is assumed, not confirmed.
+- **S7 Storefront globals, UNVERIFIED (not in official docs)**: `window.ShopifyAnalytics.meta.product.id`
+  (widely used, undocumented, and absent in the theme editor preview), `window.Shopify.country`
+  (present in Shopify's inlined globals per community sources), `window.Shopify.routes.root`
+  (mentioned in the Ajax API docs for locale-aware URLs). Check on the pilot shop: each one exists on a
+  live product page, `ShopifyAnalytics.meta.product.id` equals the Admin product id the merchant audit
+  (M6) uses, and `Shopify.country` changes with the market selector.
+- **S8 Add-to-cart detection, UNVERIFIED**: the adapter listens for a `submit` event on the form matching
+  `add_to_cart_form`, in the capture phase, so themes that `preventDefault` and call `/cart/add.js`
+  (Dawn does) are still seen. The spec's "theme cart events where available" is not implemented: there is
+  no documented cross-theme DOM cart event, and none is invented. Themes that add to cart from a
+  button click without a form submit are not detected. Check on the pilot theme. A submit is an attempt:
+  a sold-out rejection still counts.
 - **S2 Consent API timing, UNVERIFIED**: the SDK does not call `loadFeatures`; it assumes the
   theme or Shopify's banner has loaded the API, and treats a missing API as "not granted". Check on a
   real shop: (a) `Shopify.customerPrivacy` exists when the SDK script runs, or how late it appears

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ivay Tee | Ivay demo store</title>
+</head>
+<body>
+  <header><a href="/">Ivay demo store</a> <a href="/cart.html">Cart</a></header>
+  <main>
+    <h1>Ivay Tee</h1>
+    <p>Organic cotton tee. 29.00 EUR</p>
+
+    <form method="post" action="/cart/add" id="product-form">
+      <fieldset>
+        <legend>Size</legend>
+        <label><input type="radio" name="id" value="1001" checked> S</label>
+        <label><input type="radio" name="id" value="1002"> M</label>
+        <label><input type="radio" name="id" value="1003"> L</label>
+        <label><input type="radio" name="id" value="1004"> XL</label>
+      </fieldset>
+      <a href="#size-chart" data-ivay="size-chart" id="size-chart-link">Size guide</a>
+      <button type="submit" name="add">Add to cart</button>
+    </form>
+
+    <section data-ivay-block="size" id="size-chart">
+      <h2>Size chart</h2>
+      <table><tr><th>Size</th><th>Chest (cm)</th></tr><tr><td>S</td><td>92</td></tr><tr><td>M</td><td>100</td></tr><tr><td>L</td><td>108</td></tr><tr><td>XL</td><td>116</td></tr></table>
+    </section>
+
+    <section data-ivay-block="shipping">
+      <h2>Shipping</h2>
+      <p>Free delivery in Germany within 2 to 4 working days. See the <a href="/policies/shipping-policy.html">shipping policy</a>.</p>
+    </section>
+
+    <section data-ivay-block="returns">
+      <h2>Returns</h2>
+      <p>30 days to return. See the <a href="/policies/refund-policy.html">refund policy</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

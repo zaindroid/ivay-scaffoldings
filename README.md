@@ -13,11 +13,12 @@ The point is measurement: decide from real pilot data whether Phase 1 is worth b
 | ---- | ---- |
 | `contracts/` | JSON Schemas for the shop config and event envelope, plus shared fixtures |
 | `api/` | FastAPI service (currently `/health` only) |
-| `demo-store/` | Static pages served by the `static` container (placeholder until M7) |
+| `sdk/` | Browser SDK (TypeScript, zero runtime deps, under 10 KB gzipped) and the checkout pixel |
+| `demo-store/` | Static product, cart and policy pages served by the `static` container |
 | `docker/`, `docker-compose.yml` | Local stack: Postgres 16, API, nginx static server |
 | `scripts/` | Dev helpers |
 
-`sdk/`, `analysis/` and `e2e/` arrive with their milestones.
+`analysis/` and `e2e/` arrive with their milestones.
 
 ## Quick start
 
@@ -42,11 +43,12 @@ make test
 ## Checks
 
 ```
-make test   # API tests, including the contract tests against contracts/fixtures
-make lint   # ruff + mypy
+make test   # API tests (contract tests against contracts/fixtures) and SDK tests
+make lint   # ruff + mypy + tsc --noEmit
+make size   # build the SDK, fail above 10,240 bytes gzipped
 ```
 
-`make e2e`, `make size`, `make simulate` and `make gates` fail with a message until the milestone
+`make e2e`, `make simulate` and `make gates` fail with a message until the milestone
 that implements them.
 
 ## Status
@@ -54,7 +56,23 @@ that implements them.
 | Milestone | State |
 | --------- | ----- |
 | M0 Scaffold and contracts | done (see NOTES.md for what could not be verified) |
-| M1 to M8 | not started |
+| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter | done |
+| M5 to M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
+
+## Installing the checkout pixel
+
+The pixel records `checkout_started` and order completion so outcomes can be joined to sessions.
+
+1. In Shopify admin open **Settings > Customer events > Add custom pixel** and name it `Ivay`.
+2. Paste the contents of [`sdk/pixel/shopify-custom-pixel.js`](sdk/pixel/shopify-custom-pixel.js).
+3. Edit the two constants at the top: `IVAY_ENDPOINT` (your Ivay API `/v1/events` URL) and
+   `IVAY_SHOP_ID`.
+4. Set the pixel's permission to **Analytics** so it only runs for shoppers who consented.
+5. Save and connect it. The SDK must be running on the storefront: it writes the session id into the
+   cart attribute `ivay_sid`, which the pixel reads. No session id means the pixel sends nothing.
+
+The pixel sends only the event kind, the checkout total and the session id. See NOTES.md (S5, S6)
+for what still has to be confirmed on a real shop.
 
 ## Resuming on another machine
 
