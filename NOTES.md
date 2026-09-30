@@ -58,6 +58,11 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 | A22 | §4, A14 | SDK-side contract test. | The SDK cannot ship a JSON Schema validator in 10 KB, so `src/config.ts` has a hand-written validator. `tests/contract.test.ts` runs every shared fixture through it (valid must pass, invalid must fail; the manifest pointer is checked only on the API side) and validates envelopes the SDK builds against the real schema with Ajv (dev dependency only). |
 | A23 | §8.2 | Cookie provider has no change event. | Polls `document.cookie` once a second until granted, then stops. |
 | A24 | §8.8 | Fetch fallback headers. | No headers are set, so the request stays a CORS-simple `text/plain` POST, identical to sendBeacon, and needs no preflight. |
+| A25 | §8.4 | Dwell on a block taller than twice the viewport can never be 50% in view. | Rule as written: ratio >= 0.5. Such a block never counts. Only the first element matching each block selector is observed; blocks that render after start are picked up on `load`. |
+| A26 | §8.4 | Context features (`page_type`, `device`, `cart_value`) in the features snapshot? | Yes, those three, because the gate AUC baseline needs them per session and rules may use them. `product_id` and `country` are not duplicated there: they are on `page_view`. |
+| A27 | §8.4 | Session-scoped features are per tab (sessionStorage). | A shipping-policy visit in another tab is not seen. Accepted: spec says sessionStorage, and it stores less than a cross-tab store. |
+| A28 | §8.4 | "Tap" and "variant change" event types. | `repeated_taps_5s` counts `click` events (capture, passive). `variant_toggles_since_atc` counts `change` events bubbling from an element matching `variant_selector`. See S3. |
+| A29 | §8.4 | Re-evaluation while dwelling. | A 1 s ticker runs only while a block is in view and the tab visible, so a dwell threshold can be crossed without other events. |
 
 ## Contract fixtures
 
@@ -75,6 +80,10 @@ Each entry says VERIFIED (read in shopify.dev docs during this build) or UNVERIF
   version:'0.1'}], cb)`; change event `visitorConsentCollected` on `document`, detail
   `{marketingAllowed, saleOfDataAllowed, analyticsAllowed, preferencesAllowed}`. The SDK uses the
   `*Allowed()` calls and the event, not the detail.
+- **S3 Variant change events, UNVERIFIED**: the default `variant_selector` assumes the theme's
+  variant inputs fire a bubbling DOM `change` event. Dawn-style themes using `variant-selects` do,
+  but themes that swap variants with custom JS may not. Check on the pilot theme that
+  `variant_toggles_since_atc` increments when a shopper picks a size, and adjust the selector in config.
 - **S2 Consent API timing, UNVERIFIED**: the SDK does not call `loadFeatures`; it assumes the
   theme or Shopify's banner has loaded the API, and treats a missing API as "not granted". Check on a
   real shop: (a) `Shopify.customerPrivacy` exists when the SDK script runs, or how late it appears

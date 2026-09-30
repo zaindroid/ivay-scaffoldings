@@ -2,9 +2,11 @@ import { cookieConsent } from "./consent/cookie";
 import { customConsent } from "./consent/custom";
 import { shopifyConsent } from "./consent/shopify";
 import { fetchConfig } from "./config";
+import { createFeatures } from "./features";
 import { createGuard } from "./guard";
 import { getVisitorId, randomId, touchSession, visitorHash } from "./identity";
 import { createSessionStore } from "./session-store";
+import { defaultCollectors } from "./signals/registry";
 import { createTransport } from "./transport";
 import type { ConsentProvider, InitOptions } from "./types";
 
@@ -57,9 +59,20 @@ export function initIvay(opts: InitOptions): { stop(): void } {
       identity: () => ({ visitor_hash: hash, session_id: touchSession(), page_id: pageId }),
     });
     stops.push(transport.stop);
-    void store;
-    // 5. page_view, collectors and rules arrive in M2 to M4.
-    if (opts.platform) transport.send({ type: "page_view", ...opts.platform.getPageContext() });
+    // 5. page_view, then collectors. Rules and decisions arrive in M3.
+    const platform = opts.platform;
+    if (!platform) return;
+    const page = platform.getPageContext();
+    transport.send({ type: "page_view", ...page });
+    const cartSubs: Array<() => void> = [];
+    platform.onAddToCart(() => cartSubs.forEach((f) => guard.wrap(f)()));
+    const features = createFeatures(
+      { config, page, session: store, onAddToCart: (cb) => cartSubs.push(cb) },
+      defaultCollectors(),
+      () => {},
+    );
+    stops.push(features.stop);
+    features.start();
   }
 
   // 1. Consent provider comes from the init options, not the remote config.

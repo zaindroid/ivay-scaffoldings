@@ -12,7 +12,7 @@ detection. `make up` was not confirmed under MSYS make; `docker compose up -d --
 **Built**: `sdk/` (TypeScript strict, ES2019, Rollup + terser IIFE, vitest + happy-dom): `types.ts`,
 `guard.ts`, `consent/{shopify,cookie,custom}.ts`, `identity.ts`, `session-store.ts`, `config.ts`
 (validator + fetch), `transport.ts`, `index.ts` wiring. `make size`, `make lint` (adds tsc),
-`make test` (adds vitest), CI `sdk` job.
+`make test` (adds vitest). The CI `sdk` job could not be pushed (NOTES B1, `docs/ci.pending.yml`).
 **Tested**: 54 SDK tests + 8 API tests. Nothing stored or sent before consent; late consent
 starts the SDK; failed/invalid/kill-switch config is inert; transport batching (5 s, 20 events,
 pagehide, visibilitychange), sendBeacon then fetch keepalive fallback, 60 KB split; SDK
@@ -20,3 +20,15 @@ contract test against the shared fixtures. One bug found and fixed while testing
 passed an array index as a length limit (`.every(str)`), which rejected valid configs.
 **Bundle**: 2,831 bytes gzipped.
 **Blocked**: nothing. Shopify consent API verified from docs (NOTES S1); load timing UNVERIFIED (S2).
+
+## M2: Signals and features
+**Built**: `signals/{dwell,scroll,variants,taps,session,registry}.ts`, `features.ts` (100 ms
+throttle, leading + trailing), wiring in `index.ts` (page_view, add-to-cart fan-out, collectors).
+**Tested**: SDK 83 tests (29 new), API 8. Fake timers and a mocked IntersectionObserver cover
+every feature: dwell (50% threshold, out-of-view pause, hidden-tab pause, independent blocks,
+1 s re-eval ticker, late blocks, bad selector, no IntersectionObserver), scroll reversals (50 px,
+down-to-up only, 30 s decay, passive), variant toggles and reset on add-to-cart, repeated taps
+(5 s window, per element, no content kept), session features surviving a simulated navigation
+(unit and through `initIvay`), throttling, nothing written before consent.
+**Bundle**: 4,343 bytes gzipped.
+**Blocked**: nothing. UNVERIFIED: S3 (theme variant change events).

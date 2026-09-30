@@ -141,6 +141,8 @@ export interface SignalContext {
   /** Called by a collector when its value changed. The feature assembler throttles. */
   changed(): void;
   session: SessionStore;
+  /** Subscribe to add-to-cart events from the platform adapter. */
+  onAddToCart(cb: () => void): void;
 }
 
 export interface SignalCollector {

@@ -131,3 +131,30 @@ describe("inert states", () => {
     }).not.toThrow();
   });
 });
+
+describe("collectors start after consent", () => {
+  it("session features are written only after consent and persist across a simulated navigation", async () => {
+    mockFetchJson(fullConfig());
+    let granted = false;
+    let fire: () => void = () => {};
+    handle = initIvay(opts(() => granted, (cb) => (fire = cb)));
+    await new Promise((r) => setTimeout(r, 10));
+    expect(sessionStorage.length).toBe(0);
+    granted = true;
+    fire();
+    await vi.waitFor(() => expect(sessionStorage.getItem("ivay_s")).toContain("pages_viewed"));
+    handle.stop();
+    // "navigate": same cookies and sessionStorage, fresh SDK instance
+    handle = initIvay(opts(() => true));
+    await vi.waitFor(() => expect(JSON.parse(sessionStorage.getItem("ivay_s")!).features.pages_viewed).toBe(2));
+  });
+  it("add-to-cart from the platform reaches the session counter", async () => {
+    mockFetchJson(fullConfig());
+    let atc: () => void = () => {};
+    const p = { ...platform, onAddToCart: (cb: () => void) => (atc = cb) };
+    handle = initIvay({ ...opts(() => true), platform: p });
+    await vi.waitFor(() => expect(sessionStorage.getItem("ivay_s")).toContain("pages_viewed"));
+    atc();
+    expect(JSON.parse(sessionStorage.getItem("ivay_s")!).features.cart_adds).toBe(1);
+  });
+});
