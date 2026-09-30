@@ -55,3 +55,25 @@ that implements them.
 | --------- | ----- |
 | M0 Scaffold and contracts | done (see NOTES.md for what could not be verified) |
 | M1 to M8 | not started |
+
+## Resuming on another machine
+
+The work lives on branch `claude/inspiring-mccarthy-mnruk6` (nothing is merged to the default
+branch yet).
+
+```
+git clone https://github.com/zaindroid/ivay-scaffoldings.git
+cd ivay-scaffoldings
+git checkout claude/inspiring-mccarthy-mnruk6
+make install
+make up            # Docker available: postgres + api + static server
+curl localhost:8000/health && curl localhost:8080/config/shop_dev.json
+make test && make lint
+```
+
+`make up` has never been run (the build sandbox had no Docker daemon), so run it first and fix
+anything it turns up before starting M1. If Docker is not available on your machine either, use
+`make local-db` as described above.
+
+Next step: M1 (SDK foundation), spec section 10. Read `CLAUDE.md` and `NOTES.md` first; open
+questions for you are at the bottom of `NOTES.md`.
