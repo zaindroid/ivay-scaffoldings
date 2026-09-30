@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event-envelope.schema.json",
+  "title": "Ivay event envelope",
+  "description": "One POST to /v1/events carries one batch. Version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "shop_id", "session_id", "sent_at", "events"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "shop_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "visitor_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "session_id": { "$ref": "#/$defs/id" },
+    "page_id": { "$ref": "#/$defs/id" },
+    "sent_at": { "type": "integer", "minimum": 0 },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/page_view" },
+          { "$ref": "#/$defs/rule_fired" },
+          { "$ref": "#/$defs/page_summary" },
+          { "$ref": "#/$defs/outcome" }
+        ]
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "events": {
+        "contains": {
+          "required": ["type"],
+          "properties": { "type": { "enum": ["page_view", "rule_fired", "page_summary"] } }
+        }
+      }
+    }
+  },
+  "then": { "required": ["visitor_hash", "page_id"] },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,64}$" },
+    "features": {
+      "type": "object",
+      "maxProperties": 40,
+      "additionalProperties": { "type": ["boolean", "number", "string", "null"] }
+    },
+    "friction_state": {
+      "enum": ["delivery_uncertainty", "returns_uncertainty", "sizing_uncertainty"]
+    },
+    "page_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "event_id", "ts", "page_type", "device", "product_id", "country"],
+      "properties": {
+        "type": { "const": "page_view" },
+        "event_id": { "$ref": "#/$defs/id" },
+        "ts": { "type": "integer", "minimum": 0 },
+        "page_type": { "enum": ["product", "cart", "shipping_policy", "returns_policy", "other"] },
+        "device": { "enum": ["mobile", "tablet", "desktop"] },
+        "product_id": { "type": ["string", "null"] },
+        "country": { "type": ["string", "null"], "pattern": "^[A-Z]{2}$" }
+      }
+    },
+    "rule_fired": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type", "event_id", "ts", "decision_id", "friction_state", "rule_id",
+        "rule_version", "fire_seq", "arm", "mode", "play", "propensity",
+        "content_ref", "has_content", "features"
+      ],
+      "properties": {
+        "type": { "const": "rule_fired" },
+        "event_id": { "$ref": "#/$defs/id" },
+        "ts": { "type": "integer", "minimum": 0 },
+        "decision_id": { "$ref": "#/$defs/id" },
+        "friction_state": { "$ref": "#/$defs/friction_state" },
+        "rule_id": { "type": "string", "minLength": 1 },
+        "rule_version": { "type": "string", "minLength": 1 },
+        "fire_seq": { "type": "integer", "minimum": 1 },
+        "arm": { "enum": ["holdout", "treatment"] },
+        "mode": { "enum": ["shadow", "live"] },
+        "play": { "type": ["string", "null"] },
+        "propensity": { "type": ["number", "null"], "exclusiveMinimum": 0, "maximum": 1 },
+        "content_ref": { "type": ["string", "null"] },
+        "has_content": { "type": "boolean" },
+        "features": { "$ref": "#/$defs/features" }
+      }
+    },
+    "page_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "event_id", "ts", "features", "eval_count", "eval_p50_us", "eval_max_us"],
+      "properties": {
+        "type": { "const": "page_summary" },
+        "event_id": { "$ref": "#/$defs/id" },
+        "ts": { "type": "integer", "minimum": 0 },
+        "features": { "$ref": "#/$defs/features" },
+        "eval_count": { "type": "integer", "minimum": 0 },
+        "eval_p50_us": { "type": "number", "minimum": 0 },
+        "eval_max_us": { "type": "number", "minimum": 0 }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "event_id", "ts", "kind", "value", "source"],
+      "properties": {
+        "type": { "const": "outcome" },
+        "event_id": { "$ref": "#/$defs/id" },
+        "ts": { "type": "integer", "minimum": 0 },
+        "kind": { "enum": ["add_to_cart", "checkout_started", "order_completed"] },
+        "value": { "type": ["number", "null"], "minimum": 0 },
+        "source": { "enum": ["sdk", "pixel", "webhook"] }
+      }
+    }
+  }
+}

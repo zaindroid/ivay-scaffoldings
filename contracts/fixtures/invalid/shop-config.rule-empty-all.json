@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "shop_id": "shop_dev",
+  "mode": "shadow",
+  "kill_switch": false,
+  "holdout_bps": 5000,
+  "holdout_salt": "fixed-public-string",
+  "log_endpoint": "http://localhost:8000/v1/events",
+  "required_consent": [
+    "analytics"
+  ],
+  "consent_ping": false,
+  "selectors": {
+    "shipping_block": "[data-ivay-block='shipping']",
+    "returns_block": "[data-ivay-block='returns']",
+    "size_block": "[data-ivay-block='size']",
+    "size_chart_trigger": "[data-ivay='size-chart'], a[href*='size-guide']",
+    "variant_selector": "form[action*='/cart/add'] [name='id'], variant-selects input",
+    "add_to_cart_form": "form[action*='/cart/add']"
+  },
+  "url_patterns": {
+    "product": "^/products/",
+    "cart": "^/cart",
+    "shipping_policy": "^/policies/shipping-policy",
+    "returns_policy": "^/policies/refund-policy"
+  },
+  "rules": [
+    {
+      "id": "delivery_v1",
+      "version": "r1",
+      "priority": 1,
+      "friction_state": "delivery_uncertainty",
+      "pages": [
+        "product",
+        "cart"
+      ],
+      "when": {
+        "all": []
+      }
+    },
+    {
+      "id": "returns_v1",
+      "version": "r1",
+      "priority": 2,
+      "friction_state": "returns_uncertainty",
+      "pages": [
+        "product",
+        "cart"
+      ],
+      "when": {
+        "f": "returns_page_visited",
+        "op": "eq",
+        "v": true
+      }
+    },
+    {
+      "id": "sizing_v1",
+      "version": "r1",
+      "priority": 3,
+      "friction_state": "sizing_uncertainty",
+      "pages": [
+        "product"
+      ],
+      "when": {
+        "any": [
+          {
+            "f": "size_chart_opens",
+            "op": "gte",
+            "v": 2
+          },
+          {
+            "f": "variant_toggles_since_atc",
+            "op": "gte",
+            "v": 3
+          }
+        ]
+      }
+    }
+  ],
+  "plays": {
+    "delivery_uncertainty": [
+      "direct_answer",
+      "direct_answer_plus_reassurance"
+    ]
+  },
+  "content": {
+    "delivery_uncertainty": {
+      "by_country": {
+        "DE": "shipping_eta:DE"
+      }
+    },
+    "returns_uncertainty": {
+      "shop": "returns_policy:v1"
+    },
+    "sizing_uncertainty": {
+      "product_ids": [
+        "4821"
+      ]
+    }
+  }
+}

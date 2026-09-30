@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "shop_id": "shop_dev",
+  "visitor_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "session_id": "sess_0123456789",
+  "page_id": "page_0123456789",
+  "sent_at": 1790000000000,
+  "events": [
+    {
+      "type": "outcome",
+      "event_id": "evt_oc_00000001",
+      "ts": 1790000100000,
+      "kind": "add_to_cart",
+      "value": 59.9,
+      "source": "sdk"
+    }
+  ]
+}

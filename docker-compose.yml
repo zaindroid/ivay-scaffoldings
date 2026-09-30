@@ -1,0 +1,50 @@
+# Local development stack. Postgres data lives in a named volume.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ivay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ivay_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-ivay}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ivay} -d ${POSTGRES_DB:-ivay}"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ivay}:${POSTGRES_PASSWORD:-ivay_dev}@postgres:5432/${POSTGRES_DB:-ivay}
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Serves the demo store at / and the dev shop config at /config/shop_dev.json.
+  static:
+    image: nginx:1.27-alpine
+    ports:
+      - "127.0.0.1:${STATIC_PORT:-8080}:80"
+    volumes:
+      - ./demo-store:/usr/share/nginx/html:ro
+      - ./contracts/fixtures/valid/shop-config.full.json:/usr/share/nginx/html/config/shop_dev.json:ro
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/config/shop_dev.json"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:

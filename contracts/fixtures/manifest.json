@@ -1,0 +1,32 @@
+{
+  "_comment": "Each invalid fixture must fail validation with an error at (or below) the given JSON pointer. Shared by API and SDK contract tests.",
+  "invalid": {
+    "shop-config.unknown-mode.json": "/mode",
+    "shop-config.missing-kill-switch.json": "",
+    "shop-config.holdout-bps-too-high.json": "/holdout_bps",
+    "shop-config.wrong-schema-version.json": "/schema_version",
+    "shop-config.extra-top-level-field.json": "",
+    "shop-config.bad-log-endpoint.json": "/log_endpoint",
+    "shop-config.empty-required-consent.json": "/required_consent",
+    "shop-config.missing-selector.json": "/selectors",
+    "shop-config.rule-bad-op.json": "/rules/0/when/any/1/all/0/op",
+    "shop-config.rule-unknown-friction-state.json": "/rules/0/friction_state",
+    "shop-config.rule-page-not-eligible.json": "/rules/0/pages/0",
+    "shop-config.rule-empty-all.json": "/rules/0/when/all",
+    "shop-config.content-bad-country.json": "/content/delivery_uncertainty/by_country",
+    "event-envelope.bad-visitor-hash.json": "/visitor_hash",
+    "event-envelope.missing-shop-id.json": "",
+    "event-envelope.empty-events.json": "/events",
+    "event-envelope.unknown-event-type.json": "/events/0",
+    "event-envelope.missing-event-id.json": "/events/0",
+    "event-envelope.fire-seq-zero.json": "/events/1/fire_seq",
+    "event-envelope.propensity-zero.json": "/events/1/propensity",
+    "event-envelope.nested-feature-value.json": "/events/1/features/selector",
+    "event-envelope.outcome-bad-kind.json": "/events/2/kind",
+    "event-envelope.outcome-bad-source.json": "/events/2/source",
+    "event-envelope.page-view-extra-field.json": "/events/0",
+    "event-envelope.page-view-lowercase-country.json": "/events/0/country",
+    "event-envelope.sdk-events-without-visitor-hash.json": "",
+    "event-envelope.sdk-events-without-page-id.json": ""
+  }
+}

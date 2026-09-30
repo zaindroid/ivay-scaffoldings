@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "shop_id": "shop_dev",
+  "visitor_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "session_id": "sess_0123456789",
+  "page_id": "page_0123456789",
+  "sent_at": 1790000000000,
+  "events": [
+    {
+      "type": "page_view",
+      "event_id": "evt_pv_00000001",
+      "ts": 1790000000000,
+      "page_type": "product",
+      "device": "mobile",
+      "product_id": "4821",
+      "country": "DE"
+    }
+  ]
+}

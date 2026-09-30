@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "shop_id": "shop_dev",
+  "mode": "live",
+  "kill_switch": true,
+  "holdout_bps": 5000,
+  "holdout_salt": "fixed-public-string",
+  "log_endpoint": "http://localhost:8000/v1/events",
+  "required_consent": [
+    "analytics"
+  ],
+  "consent_ping": false,
+  "selectors": {
+    "shipping_block": "[data-ivay-block='shipping']",
+    "returns_block": "[data-ivay-block='returns']",
+    "size_block": "[data-ivay-block='size']",
+    "size_chart_trigger": "[data-ivay='size-chart'], a[href*='size-guide']",
+    "variant_selector": "form[action*='/cart/add'] [name='id'], variant-selects input",
+    "add_to_cart_form": "form[action*='/cart/add']"
+  },
+  "url_patterns": {
+    "product": "^/products/",
+    "cart": "^/cart",
+    "shipping_policy": "^/policies/shipping-policy",
+    "returns_policy": "^/policies/refund-policy"
+  },
+  "rules": [],
+  "plays": {},
+  "content": {}
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "shop_id": "shop_dev",
+  "visitor_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "session_id": "sess_0123456789",
+  "page_id": "page_0123456789",
+  "sent_at": 1790000000000,
+  "events": [
+    {
+      "type": "page_view",
+      "event_id": "evt_pv_00000001",
+      "ts": 1790000000000,
+      "page_type": "product",
+      "device": "mobile",
+      "product_id": "4821",
+      "country": "de"
+    },
+    {
+      "type": "rule_fired",
+      "event_id": "evt_rf_00000002",
+      "ts": 1790000042000,
+      "decision_id": "dec_0123456789",
+      "friction_state": "delivery_uncertainty",
+      "rule_id": "delivery_v1",
+      "rule_version": "r1",
+      "fire_seq": 1,
+      "arm": "holdout",
+      "mode": "shadow",
+      "play": null,
+      "propensity": null,
+      "content_ref": "shipping_eta:DE",
+      "has_content": true,
+      "features": {
+        "shipping_page_visited": true,
+        "shipping_block_dwell_s": 41.5,
+        "scroll_reversals_30s": 2,
+        "page_type": "product",
+        "device": "mobile",
+        "cart_value": 59.9,
+        "product_id": "4821",
+        "country": "DE"
+      }
+    },
+    {
+      "type": "outcome",
+      "event_id": "evt_oc_00000003",
+      "ts": 1790000100000,
+      "kind": "add_to_cart",
+      "value": 59.9,
+      "source": "sdk"
+    }
+  ]
+}

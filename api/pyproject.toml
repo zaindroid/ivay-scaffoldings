@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ivay-api"
+version = "0.0.0"
+description = "Ivay Phase 0 API: config, event ingest, order webhook"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "sqlalchemy[asyncio]>=2.0",
+  "asyncpg>=0.29",
+  "pydantic-settings>=2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "httpx>=0.27",
+  "jsonschema>=4.21",
+  "types-jsonschema",
+  "ruff>=0.4",
+  "mypy>=1.10",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = []
