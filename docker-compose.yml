@@ -10,6 +10,7 @@ services:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ivay} -d ${POSTGRES_DB:-ivay}"]
       interval: 2s
@@ -38,10 +39,10 @@ services:
       - "127.0.0.1:${STATIC_PORT:-8080}:80"
     volumes:
       - ./demo-store:/usr/share/nginx/html:ro
-      - ./contracts/fixtures/valid/shop-config.full.json:/usr/share/nginx/html/config/shop_dev.json:ro
+      - ./contracts/fixtures/valid/shop-config.full.json:/usr/share/nginx/config/shop_dev.json:ro
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/config/shop_dev.json"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/config/shop_dev.json"]
       interval: 3s
       timeout: 3s
       retries: 20

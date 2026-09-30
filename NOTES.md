@@ -5,16 +5,29 @@ Working log for Phase 0. Every ambiguity and every unverified Shopify assumption
 
 ## Environment changes
 
-- **Docker daemon is not available in the build sandbox** (`docker` CLI and Compose v5.1 are
-  installed, `docker info` fails). Per the task note: Postgres 16.13 was installed with apt and
-  runs directly; `scripts/local_db.sh` (`make local-db`) creates the `ivay` role and the `ivay` /
-  `ivay_test` databases. `docker-compose.yml` is kept for local use.
-  - Consequence: **`make up` was never run here.** What was verified instead: `docker compose
-    config -q` parses the file; the API was installed non-editable into a clean venv (what the
-    Dockerfile does) and served `/health` against the local Postgres; the static files were served
-    with `python -m http.server` from a directory laid out like the nginx mounts. Not verified: the
-    image build, the nginx config, and the compose healthchecks. The CI `compose` job runs the real
-    `make up` equivalent and is the first place that will show a problem.
+- **M0 verified with a real Docker daemon** (Docker Desktop 29.6.2, Compose v5.3.1, Windows 11).
+  Earlier sandbox notes (no daemon, Postgres via apt) are superseded; `scripts/local_db.sh`
+  remains for Docker-free Linux use. Fixes found by actually running `docker compose up`:
+  1. **nginx config mount failed** (`read-only file system`): the fixture was bind-mounted at
+     `/usr/share/nginx/html/config/shop_dev.json`, inside the read-only `demo-store` mount where
+     `config/` does not exist. Now mounted at `/usr/share/nginx/config/shop_dev.json` and served
+     by `alias` in `docker/nginx.conf`.
+  2. **`static` healthcheck always unhealthy**: `localhost` resolves to `::1` in alpine and nginx
+     listens on IPv4 only. Healthcheck now uses `127.0.0.1`.
+  3. **`ivay_test` database missing** under compose (only `local_db.sh` created it), so
+     `test_health_ok_with_real_database` returned 503. Added `docker/initdb/01-test-db.sql`,
+     mounted into `/docker-entrypoint-initdb.d`. It only runs on a fresh volume; on an existing
+     one run `docker compose down -v` or `CREATE DATABASE ivay_test OWNER ivay;` by hand.
+  4. **Makefile hard-coded `.venv/bin/`**; Windows venvs use `Scripts/`. Now detected; `make install`
+     accepts `PYTHON=/path/to/python` (MSYS `python3` is MinGW and cannot build pydantic-core).
+- Local-machine notes (not repo bugs): another project's container (`lifeline-api`) holds host port
+  8000, so verification ran with `API_PORT=8001`. Under MSYS `make`, `make up` fails with
+  "unknown shorthand flag: 'd'" because MSYS sets `HOME=/home/<user>` and docker cannot find its
+  compose plugin; `DOCKER_CONFIG` and `HOME` overrides did not fix it, and a standalone
+  `docker-compose` fallback behaved inconsistently (port env not honoured). `make up` is not
+  confirmed under MSYS make; the identical `docker compose up -d --build --wait` was run directly
+  and passes. `make install`, `make lint` and `make test` do run through MSYS make.
+  Not yet verified: `make up` from a native `make` (Linux/CI). The CI `compose` job covers that.
 - Postgres here is 16.13 (spec asks for 15+).
 
 ## Ambiguities and the interpretation chosen
