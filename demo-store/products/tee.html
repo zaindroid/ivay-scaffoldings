@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ivay Tee | Ivay demo store</title>
+  <script>window.ShopifyAnalytics = { meta: { product: { id: 4821 } } };</script>
 </head>
 <body>
   <header><a href="/">Ivay demo store</a> <a href="/cart.html">Cart</a></header>
@@ -21,7 +22,10 @@
       </fieldset>
       <a href="#size-chart" data-ivay="size-chart" id="size-chart-link">Size guide</a>
       <button type="submit" name="add">Add to cart</button>
+      <span id="demo-atc-status" role="status"></span>
     </form>
+
+    <div class="spacer" style="height:1500px" aria-hidden="true"></div>
 
     <section data-ivay-block="size" id="size-chart">
       <h2>Size chart</h2>
@@ -38,5 +42,8 @@
       <p>30 days to return. See the <a href="/policies/refund-policy.html">refund policy</a>.</p>
     </section>
   </main>
+  <script src="/assets/demo.js"></script>
+  <script src="/sdk/ivay.js"></script>
+  <script src="/assets/demo-init.js"></script>
 </body>
 </html>

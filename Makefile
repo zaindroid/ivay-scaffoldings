@@ -1,4 +1,8 @@
 VENV ?= .venv
+# The stack's published ports (see docker-compose.yml). Override API_PORT if 8000 is taken.
+API_PORT ?= 8000
+STATIC_PORT ?= 8080
+DEV_DB ?= postgresql+asyncpg://ivay:ivay_dev@127.0.0.1:5432/ivay
 # venv layout differs: Scripts/ on Windows, bin/ elsewhere
 VBIN := $(if $(wildcard $(VENV)/Scripts),$(VENV)/Scripts,$(VENV)/bin)
 PY   := $(VBIN)/python
@@ -21,6 +25,7 @@ local-db: ## Docker-free Postgres for tests (see NOTES.md)
 lint:
 	cd api && ../$(VBIN)/ruff check . ../scripts && ../$(VBIN)/mypy app tests
 	cd sdk && npx tsc --noEmit
+	cd e2e && npx tsc --noEmit
 
 test: ## API tests (needs Postgres: `make up` or `make local-db`) and SDK tests
 	cd api && ../$(VBIN)/pytest -q
@@ -29,12 +34,15 @@ test: ## API tests (needs Postgres: `make up` or `make local-db`) and SDK tests
 audit-dry: ## merchant data audit on sample data (no network, no credentials)
 	$(PY) scripts/audit_merchant_data.py --dry
 
-# Later milestones. They fail loudly rather than pretending to pass.
-e2e:
-	@echo "make e2e: not implemented until M7" >&2; exit 1
+e2e: ## Playwright against the running stack (start it first: docker compose up -d --build --wait)
+	@curl -fsS http://localhost:$(API_PORT)/health >/dev/null || { echo "make e2e: the API is not answering on :$(API_PORT). Start the stack first: API_PORT=$(API_PORT) docker compose up -d --build --wait" >&2; exit 1; }
+	@curl -fsS http://localhost:$(STATIC_PORT)/products/tee.html >/dev/null || { echo "make e2e: the static server is not answering on :$(STATIC_PORT)" >&2; exit 1; }
+	cd sdk && npm run build --silent
+	DATABASE_URL=$(DEV_DB) API_PORT=$(API_PORT) STATIC_PORT=$(STATIC_PORT) $(PY) scripts/seed_dev.py
+	cd e2e && API_PORT=$(API_PORT) npx playwright test
 size: ## build the SDK and fail above 10,240 bytes gzipped
 	cd sdk && npm run build --silent && node scripts/size.mjs
-simulate:
-	@echo "make simulate: not implemented until M7" >&2; exit 1
+simulate: ## write SIMULATED sessions with planted truth to the dev database (shop sim_shop)
+	DATABASE_URL=$(DEV_DB) $(PY) scripts/simulate_sessions.py --truncate
 gates:
 	@echo "make gates: not implemented until M8" >&2; exit 1

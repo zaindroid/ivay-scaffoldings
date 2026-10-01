@@ -11,7 +11,9 @@ const ORIGIN = "http://localhost:8080";
 /** Load a demo-store page's markup and set the URL, as a browser would show it. */
 function loadDemo(file: string, path = "/" + file.replace(/\.html$/, "")) {
   const html = readFileSync(join(DEMO, file), "utf8");
-  document.body.innerHTML = /<body[^>]*>([\s\S]*)<\/body>/.exec(html)![1];
+  // Markup only: the page's scripts (demo shim, SDK bundle) must not run inside the unit test.
+  const body = /<body[^>]*>([\s\S]*)<\/body>/.exec(html)![1].replace(/<script[\s\S]*?<\/script>/g, "");
+  document.body.innerHTML = body;
   (window as unknown as { happyDOM: { setURL(u: string): void } }).happyDOM.setURL(ORIGIN + path);
 }
 const setGlobals = (g: Record<string, unknown>) => Object.assign(window, g);

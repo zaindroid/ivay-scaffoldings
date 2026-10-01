@@ -103,3 +103,27 @@ never in any error, throttle retry with `Retry-After`, retry limit), the whole p
 transport, and the script run as a subprocess: dry text and JSON, no credentials, one credential missing.
 **Blocked**: nothing. UNVERIFIED: S13 (live query shape), S14 (size charts). Fixtures are written from the
 documented schema, not recorded (stated in the fixture and in NOTES S13).
+
+## M7: Demo store, E2E and simulator
+**Built**: demo store pages wired to the real bundle (`demo-store/assets/demo.js`, `demo-init.js`, product page
+with a spacer for scrolling, cart, both policies), nginx `/sdk/` alias, `e2e/` (Playwright, 7 tests),
+`make e2e`, `scripts/simulate_sessions.py` (planted truth), `make simulate`.
+**Tested**: E2E 7 of 7 against the live stack (real Chromium, real bundle, real API and Postgres): nothing
+exists or is sent before consent; accepting consent starts the SDK without a reload; scroll, size chart,
+shipping policy round trip, return, add to cart; a delivery rule fires exactly once (`fire_seq` 1, shadow,
+`play` and `propensity` null, `has_content` true), the same session id on every row and in the cart attribute
+(written once), `cart_value` 29 in the summaries, four page views, four summaries with latency, the
+`session_rollup` row, the raw visitor id absent from every table, the page content unchanged by the SDK;
+sizing and returns rules; consent declined and consent ignored produce no cookie, no storage, no request to
+the API and zero rows; kill switch and a failing config fetch are inert and the page still works. Mutation
+check: making the Shopify consent provider always say yes fails both no-consent tests.
+Simulator: 20 API tests (now 196 API tests in total, SDK 145): determinism, no clock, rows validate as
+contract events, unique ids, decisions follow the SDK rules, nested funnel, arm formula and per-visitor
+stability, trigger rates and coverage within 4 sigma of the closed form, consent rate, holdout share,
+latency, the planted signal effect, DB round trip (written rows reproduce the planted truth through
+`session_rollup`, idempotent with truncate, a real shop's rows untouched), CLI refuses non-sim shop ids.
+Bugs found on the way: a stale `/cart.js` stub made the SDK look like it wrote the cart attribute on every
+page (the stub, not the SDK, was wrong: NOTES A71 note); an asyncpg date type in the simulator's writer; the
+platform unit test depending on the live static server (A66).
+**Bundle**: 5,861 bytes gzipped.
+**Blocked**: nothing. The CI `e2e` job is in `docs/ci.pending.yml` (B1).

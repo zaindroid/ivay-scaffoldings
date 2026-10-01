@@ -14,11 +14,12 @@ The point is measurement: decide from real pilot data whether Phase 1 is worth b
 | `contracts/` | JSON Schemas for the shop config and event envelope, plus shared fixtures |
 | `api/` | FastAPI service: event ingest, config, consent ping, order webhook, Alembic migrations |
 | `sdk/` | Browser SDK (TypeScript, zero runtime deps, under 10 KB gzipped) and the checkout pixel |
-| `demo-store/` | Static product, cart and policy pages served by the `static` container |
+| `demo-store/` | Static product, cart and policy pages served by the `static` container, wired to the real SDK bundle |
+| `e2e/` | Playwright tests: the real bundle in Chromium against the demo store, the API and Postgres |
 | `docker/`, `docker-compose.yml` | Local stack: Postgres 16, API, nginx static server |
 | `scripts/` | Dev helpers |
 
-`analysis/` and `e2e/` arrive with their milestones.
+`analysis/` arrives with M8.
 
 ## Quick start
 
@@ -46,9 +47,11 @@ make test
 make test   # API tests (contract tests against contracts/fixtures) and SDK tests
 make lint   # ruff + mypy + tsc --noEmit
 make size   # build the SDK, fail above 10,240 bytes gzipped
+make e2e    # Playwright against the running stack (start it first, see below)
+make simulate  # SIMULATED sessions with planted truth into the dev database
 ```
 
-`make e2e`, `make simulate` and `make gates` fail with a message until the milestone
+`make gates` fails with a message until the milestone
 that implements them.
 
 ## Status
@@ -56,8 +59,8 @@ that implements them.
 | Milestone | State |
 | --------- | ----- |
 | M0 Scaffold and contracts | done (see NOTES.md for what could not be verified) |
-| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter, M5 backend, M6 merchant audit | done |
-| M7 to M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
+| M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter, M5 backend, M6 merchant audit, M7 demo store, E2E and simulator | done |
+| M8 | in progress (see docs/OVERNIGHT_REPORT.md) |
 
 ## Installing the checkout pixel
 

@@ -12,3 +12,6 @@ build/
 playwright-report/
 test-results/
 .pgdata/
+analysis/out/
+e2e/test-results/
+e2e/playwright-report/
