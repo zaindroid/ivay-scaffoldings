@@ -42,7 +42,9 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.mypy]
-python_version = "3.11"
+# 3.12 so mypy can parse numpy stubs (psycopg is installed alongside the analysis package).
+# 3.12-only syntax in our own code is still caught: ruff targets py311 and rejects it.
+python_version = "3.12"
 strict = true
 plugins = []
 mypy_path = "../scripts"

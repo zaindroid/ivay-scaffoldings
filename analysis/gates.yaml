@@ -1,0 +1,59 @@
+# Gate thresholds for the Phase 0 report (spec section 2).
+#
+# EVERY VALUE BELOW IS PROVISIONAL (proposed by Claude), except the SDK size limit, which the
+# spec fixes at 10,240 bytes gzipped. The spec gives no thresholds (NOTES.md A12). They are
+# starting points chosen so that a failing number is visible, not decisions: the owner should
+# replace them before a pilot is judged. The report prints each number next to its threshold
+# and never hides one that fails.
+
+# Sample size per arm for the proof test, number 8 (spec: default 2300).
+# PROVISIONAL (proposed by Claude): 2,300 per arm is the spec's default, not a power calculation.
+n_per_arm: 2300
+
+# Number 5: which outcome the cross-validated AUC predicts, and for which sessions.
+# Spec: "configurable; default is add_to_cart for product-page sessions".
+auc:
+  outcome: add_to_cart        # add_to_cart | checkout_started | order_completed
+  population: product_sessions  # product_sessions | all_sessions
+  folds: 5
+  seed: 0
+
+# Each threshold is a minimum ("min") or a maximum ("max"). Per-state numbers use the same
+# threshold for every friction state.
+thresholds:
+  addressable_share:           # 1. share of abandoning sessions that touched shipping, returns or size info
+    min: 0.30
+    status: PROVISIONAL (proposed by Claude)
+    why: Fewer than 3 in 10 abandoners touching answerable information leaves little for an on-page answer to address.
+  trigger_rate:                # 2. per friction state, fired sessions / consented sessions
+    min: 0.03
+    status: PROVISIONAL (proposed by Claude)
+    why: Below 3% of sessions, a proof test needs many weeks (see number 8) and the state is too rare to matter.
+  grounded_coverage:           # 3. per friction state, fired decisions with content / fired decisions
+    min: 0.70
+    status: PROVISIONAL (proposed by Claude)
+    why: An answer must exist for most of the moments the rule detects, or the intervention would mostly have nothing to say.
+  consent_rate:                # 4. consented page loads / all page loads (needs the consent ping)
+    min: 0.50
+    status: PROVISIONAL (proposed by Claude)
+    why: With under half the page loads consented, the measurable audience is too small and may be unrepresentative.
+  signal_lift_auc:             # 5. CV AUC(baseline + signals) minus CV AUC(baseline)
+    min: 0.02
+    status: PROVISIONAL (proposed by Claude)
+    why: Two AUC points is a small but clearly non-zero improvement; below that the signals add little to page type, device and cart value.
+  sdk_size_bytes:              # 6. gzipped production bundle
+    max: 10240
+    status: FIXED BY SPEC (section 3, not provisional)
+    why: The core bundle must stay at or under 10 KB gzipped.
+  decision_latency_p50_us:     # 7. p50 of rule-evaluation time measured by the SDK in the field
+    max: 1000
+    status: PROVISIONAL (proposed by Claude)
+    why: Rule evaluation should be well under a millisecond so it never competes with the page.
+  decision_latency_max_us:     # 7. worst rule-evaluation time seen in the field
+    max: 16000
+    status: PROVISIONAL (proposed by Claude)
+    why: One 60 Hz frame is about 16 ms; a single evaluation should never cost a frame.
+  proof_test_days:             # 8. days = 2n / (sessions_per_day x consent_rate x trigger_rate)
+    max: 42
+    status: PROVISIONAL (proposed by Claude)
+    why: A proof test longer than six weeks is slower than a pilot can sensibly wait.

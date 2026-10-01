@@ -43,6 +43,29 @@ jobs:
       - run: npx vitest run
       - run: npm run build && node scripts/size.mjs
 
+  analysis:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ivay
+          POSTGRES_PASSWORD: ivay_dev
+          POSTGRES_DB: ivay_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ivay -d ivay_test"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://ivay:ivay_dev@localhost:5432/ivay_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e "api[dev]" -e "analysis[dev]"
+      - run: cd analysis && ruff check . && mypy ivay_analysis tests
+      - run: cd analysis && pytest -q
+
   compose:
     runs-on: ubuntu-latest
     steps:

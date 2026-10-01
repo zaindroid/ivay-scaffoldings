@@ -11,7 +11,7 @@ PY   := $(VBIN)/python
 
 install: ## create the virtualenv and install the API with dev tools
 	$(or $(PYTHON),python3) -m venv $(VENV)
-	$$(test -d $(VENV)/Scripts && echo $(VENV)/Scripts || echo $(VENV)/bin)/python -m pip install -q -e "api[dev]"
+	$$(test -d $(VENV)/Scripts && echo $(VENV)/Scripts || echo $(VENV)/bin)/python -m pip install -q -e "api[dev]" -e "analysis[dev]"
 
 up: ## start postgres, api and the static server (needs Docker)
 	docker compose up -d --build --wait
@@ -24,11 +24,13 @@ local-db: ## Docker-free Postgres for tests (see NOTES.md)
 
 lint:
 	cd api && ../$(VBIN)/ruff check . ../scripts && ../$(VBIN)/mypy app tests
+	cd analysis && ../$(VBIN)/ruff check . && ../$(VBIN)/mypy ivay_analysis tests
 	cd sdk && npx tsc --noEmit
 	cd e2e && npx tsc --noEmit
 
-test: ## API tests (needs Postgres: `make up` or `make local-db`) and SDK tests
+test: ## API, analysis (needs Postgres: `make up` or `make local-db`) and SDK tests
 	cd api && ../$(VBIN)/pytest -q
+	cd analysis && ../$(VBIN)/pytest -q
 	cd sdk && npx vitest run
 
 audit-dry: ## merchant data audit on sample data (no network, no credentials)
@@ -44,5 +46,7 @@ size: ## build the SDK and fail above 10,240 bytes gzipped
 	cd sdk && npm run build --silent && node scripts/size.mjs
 simulate: ## write SIMULATED sessions with planted truth to the dev database (shop sim_shop)
 	DATABASE_URL=$(DEV_DB) $(PY) scripts/simulate_sessions.py --truncate
-gates:
-	@echo "make gates: not implemented until M8" >&2; exit 1
+SHOP ?= sim_shop
+gates: ## the gate report for a shop (default: the simulated shop; SHOP=my_shop for real data)
+	cd sdk && npm run build --silent
+	DATABASE_URL=$(DEV_DB) $(PY) -m ivay_analysis.report --shop $(SHOP)
