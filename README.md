@@ -63,6 +63,19 @@ make gates     # the gate report (default: the simulated shop; SHOP=my_shop for 
 | M1 SDK foundation, M2 signals, M3 rules, M4 Shopify adapter, M5 backend, M6 merchant audit, M7 demo store, E2E and simulator, M8 gate report | done |
 | Pilot | not started: see the UNVERIFIED list in NOTES.md and docs/OVERNIGHT_REPORT.md |
 
+## Demo pilot with live data
+
+```
+API_PORT=8001 docker compose up -d --build --wait   # use 8001 if 8000 is taken
+DATABASE_URL=postgresql+asyncpg://ivay:ivay_dev@127.0.0.1:5432/ivay API_PORT=8001 python scripts/seed_dev.py
+make live                                           # in a second terminal: follows shop_dev
+```
+
+Open `http://localhost:8080/products/tee.html?api=http://localhost:8001` (the `api` value is
+remembered), click Accept on the demo banner, then scroll, open the size guide, add to cart and
+visit the cart. Each page view, rule decision, evaluation summary and outcome appears in
+`make live` as it lands. Nothing is recorded before Accept.
+
 ## Installing the checkout pixel
 
 The pixel records `checkout_started` and order completion so outcomes can be joined to sessions.

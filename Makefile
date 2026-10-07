@@ -7,7 +7,7 @@ DEV_DB ?= postgresql+asyncpg://ivay:ivay_dev@127.0.0.1:5432/ivay
 VBIN := $(if $(wildcard $(VENV)/Scripts),$(VENV)/Scripts,$(VENV)/bin)
 PY   := $(VBIN)/python
 
-.PHONY: install up down local-db test lint audit-dry e2e size simulate gates
+.PHONY: install up down local-db test lint audit-dry e2e size simulate gates live
 
 install: ## create the virtualenv and install the API with dev tools
 	$(or $(PYTHON),python3) -m venv $(VENV)
@@ -50,3 +50,6 @@ SHOP ?= sim_shop
 gates: ## the gate report for a shop (default: the simulated shop; SHOP=my_shop for real data)
 	cd sdk && npm run build --silent
 	DATABASE_URL=$(DEV_DB) $(PY) -m ivay_analysis.report --shop $(SHOP)
+LIVE_SHOP ?= shop_dev
+live: ## follow incoming events in real time (LIVE_SHOP=shop_dev by default)
+	DATABASE_URL=$(DEV_DB) $(PY) -u scripts/live_view.py --shop $(LIVE_SHOP)
