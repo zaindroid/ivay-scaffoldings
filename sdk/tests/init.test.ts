@@ -81,7 +81,7 @@ describe("consent gating", () => {
   it("the raw visitor id is never sent", async () => {
     mockFetchJson(fullConfig());
     handle = initIvay(opts(() => true));
-    await vi.waitFor(() => expect(document.cookie).toContain("ivay_vid="));
+    await vi.waitFor(() => expect(document.cookie).toMatch(/ivay_vid=[0-9a-f]{32}/));
     const vid = /ivay_vid=([0-9a-f]+)/.exec(document.cookie)![1];
     window.dispatchEvent(new Event("pagehide"));
     expect(beacons.join("")).not.toContain(vid);
