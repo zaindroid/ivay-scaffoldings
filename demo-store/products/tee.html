@@ -3,45 +3,121 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ivay Tee | Ivay demo store</title>
+  <meta name="robots" content="noindex">
+  <title>Everyday Tee | Linden</title>
+  <link rel="stylesheet" href="/assets/store.css">
   <script>window.ShopifyAnalytics = { meta: { product: { id: 4821 } } };</script>
 </head>
 <body>
-  <header><a href="/">Ivay demo store</a> <a href="/cart.html">Cart</a></header>
-  <main>
-    <h1>Ivay Tee</h1>
-    <p>Organic cotton tee. 29.00 EUR</p>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="announce">Free delivery in Germany, 2 to 4 working days</div>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="logo" href="/">Linden</a>
+      <nav aria-label="Main">
+        <a href="/products/tee.html">Shop</a>
+        <a href="/policies/shipping-policy.html">Delivery</a>
+        <a href="/policies/refund-policy.html">Returns</a>
+      </nav>
+      <a class="cart-link" href="/cart.html">Cart <span id="cart-count" class="count" data-empty="true">0</span></a>
+    </div>
+  </header>
 
-    <form method="post" action="/cart/add" id="product-form">
-      <fieldset>
-        <legend>Size</legend>
-        <label><input type="radio" name="id" value="1001" checked> S</label>
-        <label><input type="radio" name="id" value="1002"> M</label>
-        <label><input type="radio" name="id" value="1003"> L</label>
-        <label><input type="radio" name="id" value="1004"> XL</label>
-      </fieldset>
-      <a href="#size-chart" data-ivay="size-chart" id="size-chart-link">Size guide</a>
-      <button type="submit" name="add">Add to cart</button>
-      <span id="demo-atc-status" role="status"></span>
-    </form>
+  <main id="main">
+    <div class="wrap">
+      <p class="crumbs"><a href="/">Home</a> / Everyday Tee</p>
 
-    <div class="spacer" style="height:1500px" aria-hidden="true"></div>
+      <div class="product">
+        <div class="gallery">
+          <div class="panel"><img src="/assets/tee.svg" alt="Everyday Tee in off-white, front view" width="400" height="440"></div>
+          <figure>
+            <div class="panel panel-quiet"><img src="/assets/neck.svg" alt="Close-up of the ribbed collar" width="300" height="300"></div>
+            <figcaption>Ribbed collar that stays flat</figcaption>
+          </figure>
+          <figure>
+            <div class="panel panel-quiet"><img src="/assets/fabric.svg" alt="Close-up of the cotton jersey knit" width="300" height="300"></div>
+            <figcaption>Organic cotton jersey</figcaption>
+          </figure>
+        </div>
 
-    <section data-ivay-block="size" id="size-chart">
-      <h2>Size chart</h2>
-      <table><tr><th>Size</th><th>Chest (cm)</th></tr><tr><td>S</td><td>92</td></tr><tr><td>M</td><td>100</td></tr><tr><td>L</td><td>108</td></tr><tr><td>XL</td><td>116</td></tr></table>
-    </section>
+        <div class="buybox">
+          <h1>Everyday Tee</h1>
+          <span class="price">€29.00</span>
+          <p class="lede">An organic cotton tee with a relaxed cut. Pre-washed, so it keeps its shape after the first wash.</p>
 
-    <section data-ivay-block="shipping">
-      <h2>Shipping</h2>
-      <p>Free delivery in Germany within 2 to 4 working days. See the <a href="/policies/shipping-policy.html">shipping policy</a>.</p>
-    </section>
+          <form method="post" action="/cart/add" id="product-form">
+            <fieldset>
+              <legend class="size-head"><span>Size</span><a href="#size-chart" data-ivay="size-chart" id="size-chart-link">Size guide</a></legend>
+              <div class="sizes">
+                <label><input type="radio" name="id" value="1001" data-label="S" checked><span>S</span></label>
+                <label><input type="radio" name="id" value="1002" data-label="M"><span>M</span></label>
+                <label><input type="radio" name="id" value="1003" data-label="L"><span>L</span></label>
+                <label><input type="radio" name="id" value="1004" data-label="XL"><span>XL</span></label>
+              </div>
+            </fieldset>
+            <div class="buy-actions">
+              <button class="btn btn-block" type="submit" name="add">Add to cart</button>
+            </div>
+            <p id="demo-atc-status" role="status"></p>
+          </form>
 
-    <section data-ivay-block="returns">
-      <h2>Returns</h2>
-      <p>30 days to return. See the <a href="/policies/refund-policy.html">refund policy</a>.</p>
-    </section>
+          <ul class="perks">
+            <li>Free delivery in Germany</li>
+            <li>30 days to return</li>
+            <li>Organic cotton, pre-washed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="wrap">
+        <section class="info-row" data-ivay-block="size" id="size-chart">
+          <div><h2>Size chart</h2></div>
+          <div>
+            <p>Measure a tee that fits you well, laid flat. If you are between sizes, choose the larger one.</p>
+            <table>
+              <thead><tr><th scope="col">Size</th><th scope="col">Chest (cm)</th></tr></thead>
+              <tbody>
+                <tr><td>S</td><td>92</td></tr>
+                <tr><td>M</td><td>100</td></tr>
+                <tr><td>L</td><td>108</td></tr>
+                <tr><td>XL</td><td>116</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="info-row" data-ivay-block="shipping">
+          <div><h2>Shipping</h2></div>
+          <div>
+            <p>Free delivery in Germany within 2 to 4 working days.</p>
+            <p>See the <a href="/policies/shipping-policy.html">shipping policy</a> for details.</p>
+          </div>
+        </section>
+
+        <section class="info-row" data-ivay-block="returns">
+          <div><h2>Returns</h2></div>
+          <div>
+            <p>30 days to return it, unworn, for a refund.</p>
+            <p>See the <a href="/policies/refund-policy.html">refund policy</a> for how it works.</p>
+          </div>
+        </section>
+      </div>
+    </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="foot">
+        <div><h3>Linden</h3><p>Everyday basics in organic cotton.</p></div>
+        <div><h3>Help</h3><ul><li><a href="/policies/shipping-policy.html">Shipping policy</a></li><li><a href="/policies/refund-policy.html">Refund policy</a></li></ul></div>
+        <div><h3>Shop</h3><ul><li><a href="/products/tee.html">Everyday Tee</a></li><li><a href="/cart.html">Cart</a></li></ul></div>
+      </div>
+      <p class="demo-note">Linden is a demo store used to test Ivay. Nothing here is for sale and no orders are taken.</p>
+    </div>
+  </footer>
+
   <script src="/assets/demo.js"></script>
   <script src="/sdk/ivay.js"></script>
   <script src="/assets/demo-init.js"></script>

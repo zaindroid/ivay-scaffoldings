@@ -1,13 +1,72 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Ivay demo store</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Linden | Everyday basics in organic cotton</title>
+  <link rel="stylesheet" href="/assets/store.css">
+</head>
 <body>
-  <h1>Ivay demo store</h1>
-  <ul>
-    <li><a href="/products/tee.html">Ivay Tee</a></li>
-    <li><a href="/cart.html">Cart</a></li>
-    <li><a href="/policies/shipping-policy.html">Shipping policy</a></li>
-    <li><a href="/policies/refund-policy.html">Refund policy</a></li>
-  </ul>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="announce">Free delivery in Germany, 2 to 4 working days</div>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="logo" href="/">Linden</a>
+      <nav aria-label="Main">
+        <a href="/products/tee.html">Shop</a>
+        <a href="/policies/shipping-policy.html">Delivery</a>
+        <a href="/policies/refund-policy.html">Returns</a>
+      </nav>
+      <a class="cart-link" href="/cart.html">Cart <span id="cart-count" class="count" data-empty="true">0</span></a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="hero">
+        <div>
+          <h1>A tee that keeps its shape.</h1>
+          <p>One cut in organic cotton, pre-washed and delivered in 2 to 4 working days.</p>
+          <a class="btn" href="/products/tee.html">Shop the Everyday Tee</a>
+        </div>
+        <div class="panel"><img src="/assets/tee.svg" alt="Everyday Tee in off-white" width="400" height="440"></div>
+      </section>
+
+      <section class="assurances" aria-label="Why Linden">
+        <div><h3>Free delivery in Germany</h3><p>Arrives in 2 to 4 working days.</p></div>
+        <div><h3>30 days to return</h3><p>Unworn, for a refund.</p></div>
+        <div><h3>Organic cotton</h3><p>Pre-washed so it keeps its shape.</p></div>
+      </section>
+
+      <section class="featured">
+        <h2>The collection</h2>
+        <div class="featured-card">
+          <a class="panel" href="/products/tee.html" aria-label="Everyday Tee"><img src="/assets/tee.svg" alt="" width="400" height="440"></a>
+          <div>
+            <h3>Everyday Tee</h3>
+            <p>Relaxed cut, ribbed collar, sizes S to XL.</p>
+            <p class="price">€29.00</p>
+            <a class="btn btn-quiet" href="/products/tee.html">View product</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="foot">
+        <div><h3>Linden</h3><p>Everyday basics in organic cotton.</p></div>
+        <div><h3>Help</h3><ul><li><a href="/policies/shipping-policy.html">Shipping policy</a></li><li><a href="/policies/refund-policy.html">Refund policy</a></li></ul></div>
+        <div><h3>Shop</h3><ul><li><a href="/products/tee.html">Everyday Tee</a></li><li><a href="/cart.html">Cart</a></li></ul></div>
+      </div>
+      <p class="demo-note">Linden is a demo store used to test Ivay. Nothing here is for sale and no orders are taken.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
+  <script src="/sdk/ivay.js"></script>
+  <script src="/assets/demo-init.js"></script>
 </body>
 </html>

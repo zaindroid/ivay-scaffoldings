@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" role="img" aria-label="Off-white crew-neck t-shirt">
+  <path d="M132 36 L58 78 L18 152 L76 184 L102 152 L102 396 Q102 410 116 410 L284 410 Q298 410 298 396 L298 152 L324 184 L382 152 L342 78 L268 36 Q246 72 200 72 Q154 72 132 36 Z" fill="#f7f6f2"/>
+  <path d="M102 152 L102 396 Q102 410 116 410 L142 410 L142 168 Z" fill="#0e1726" opacity=".05"/>
+  <path d="M298 152 L298 396 Q298 410 284 410 L258 410 L258 168 Z" fill="#0e1726" opacity=".05"/>
+  <path d="M132 36 Q154 72 200 72 Q246 72 268 36" fill="none" stroke="#dcd9cf" stroke-width="9" stroke-linecap="round"/>
+  <path d="M137 46 Q158 82 200 82 Q242 82 263 46" fill="none" stroke="#c9c5b8" stroke-width="2"/>
+  <path d="M105 398 L295 398" stroke="#dcd9cf" stroke-width="2"/>
+</svg>

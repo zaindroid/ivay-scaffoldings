@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Close-up of the cotton jersey knit">
+  <defs><pattern id="k" width="20" height="26" patternUnits="userSpaceOnUse">
+    <path d="M10 2 Q2 13 10 24 M10 2 Q18 13 10 24" fill="none" stroke="#cfcbbf" stroke-width="3" stroke-linecap="round"/>
+  </pattern></defs>
+  <rect width="300" height="300" fill="#f7f6f2"/><rect width="300" height="300" fill="url(#k)"/>
+</svg>

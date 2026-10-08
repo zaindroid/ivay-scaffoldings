@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Close-up of the ribbed collar">
+  <path d="M0 40 Q150 190 300 40 L300 300 L0 300 Z" fill="#f7f6f2"/>
+  <path d="M0 40 Q150 190 300 40" fill="none" stroke="#dcd9cf" stroke-width="22"/>
+  <path d="M0 58 Q150 208 300 58" fill="none" stroke="#c9c5b8" stroke-width="2" stroke-dasharray="7 6"/>
+</svg>

@@ -3,25 +3,54 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Your cart | Ivay demo store</title>
+  <meta name="robots" content="noindex">
+  <title>Your cart | Linden</title>
+  <link rel="stylesheet" href="/assets/store.css">
 </head>
 <body>
-  <header><a href="/">Ivay demo store</a></header>
-  <main>
-    <h1>Your cart</h1>
-    <form method="post" action="/cart">
-      <p>Ivay Tee, size M: 29.00 EUR</p>
-      <button type="submit" name="checkout">Check out</button>
-    </form>
-    <section data-ivay-block="shipping">
-      <h2>Delivery</h2>
-      <p>Free delivery in Germany within 2 to 4 working days.</p>
-    </section>
-    <section data-ivay-block="returns">
-      <h2>Returns</h2>
-      <p>30 days to return.</p>
-    </section>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="announce">Free delivery in Germany, 2 to 4 working days</div>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="logo" href="/">Linden</a>
+      <nav aria-label="Main">
+        <a href="/products/tee.html">Shop</a>
+        <a href="/policies/shipping-policy.html">Delivery</a>
+        <a href="/policies/refund-policy.html">Returns</a>
+      </nav>
+      <a class="cart-link" href="/cart.html">Cart <span id="cart-count" class="count" data-empty="true">0</span></a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <div class="page-title"><h1>Your cart</h1></div>
+      <div class="cart" id="cart-root"></div>
+
+      <div class="cart-info">
+        <section data-ivay-block="shipping">
+          <h2>Delivery</h2>
+          <p>Free delivery in Germany within 2 to 4 working days.</p>
+        </section>
+        <section data-ivay-block="returns">
+          <h2>Returns</h2>
+          <p>30 days to return it, unworn, for a refund.</p>
+        </section>
+      </div>
+    </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="foot">
+        <div><h3>Linden</h3><p>Everyday basics in organic cotton.</p></div>
+        <div><h3>Help</h3><ul><li><a href="/policies/shipping-policy.html">Shipping policy</a></li><li><a href="/policies/refund-policy.html">Refund policy</a></li></ul></div>
+        <div><h3>Shop</h3><ul><li><a href="/products/tee.html">Everyday Tee</a></li><li><a href="/cart.html">Cart</a></li></ul></div>
+      </div>
+      <p class="demo-note">Linden is a demo store used to test Ivay. Nothing here is for sale and no orders are taken.</p>
+    </div>
+  </footer>
+
   <script src="/assets/demo.js"></script>
   <script src="/sdk/ivay.js"></script>
   <script src="/assets/demo-init.js"></script>

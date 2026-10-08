@@ -1,13 +1,49 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Shipping policy | Ivay demo store</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Shipping policy | Linden</title>
+  <link rel="stylesheet" href="/assets/store.css">
+</head>
 <body>
-  <header><a href="/">Ivay demo store</a></header>
-  <main>
-    <h1>Shipping policy</h1>
-    <p>We ship within Germany in 2 to 4 working days. Shipping is free above 50 EUR.</p>
-    <p><a href="/products/tee.html">Back to the product</a></p>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="announce">Free delivery in Germany, 2 to 4 working days</div>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="logo" href="/">Linden</a>
+      <nav aria-label="Main">
+        <a href="/products/tee.html">Shop</a>
+        <a href="/policies/shipping-policy.html">Delivery</a>
+        <a href="/policies/refund-policy.html">Returns</a>
+      </nav>
+      <a class="cart-link" href="/cart.html">Cart <span id="cart-count" class="count" data-empty="true">0</span></a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <article class="article">
+        <h1>Shipping policy</h1>
+        <p>We ship within Germany in 2 to 4 working days. Delivery is free.</p>
+        <p>You get a tracking link by email when your parcel leaves us.</p>
+        <a class="back" href="/products/tee.html">Back to the product</a>
+      </article>
+    </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="foot">
+        <div><h3>Linden</h3><p>Everyday basics in organic cotton.</p></div>
+        <div><h3>Help</h3><ul><li><a href="/policies/shipping-policy.html">Shipping policy</a></li><li><a href="/policies/refund-policy.html">Refund policy</a></li></ul></div>
+        <div><h3>Shop</h3><ul><li><a href="/products/tee.html">Everyday Tee</a></li><li><a href="/cart.html">Cart</a></li></ul></div>
+      </div>
+      <p class="demo-note">Linden is a demo store used to test Ivay. Nothing here is for sale and no orders are taken.</p>
+    </div>
+  </footer>
+
   <script src="/assets/demo.js"></script>
   <script src="/sdk/ivay.js"></script>
   <script src="/assets/demo-init.js"></script>
