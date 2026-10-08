@@ -8,7 +8,9 @@
     if (q) window.localStorage.setItem("demo_api", q);
     if (!api) api = window.localStorage.getItem("demo_api");
   } catch (e) {}
-  api = api || "http://localhost:8000";
+  // Hosted, the API shares the page's origin; on localhost it is the local stack.
+  var local = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+  api = api || (local ? "http://localhost:8000" : window.location.origin);
   window.Ivay.initIvay({
     shopId: "shop_dev",
     configBase: api + "/v1/config",

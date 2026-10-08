@@ -76,6 +76,23 @@ remembered), click Accept on the demo banner, then scroll, open the size guide, 
 visit the cart. Each page view, rule decision, evaluation summary and outcome appears in
 `make live` as it lands. Nothing is recorded before Accept.
 
+## Hosted pilot
+
+Live at `https://srv1900484.hstgr.cloud` (demo store at `/products/tee.html`, API under `/v1`).
+It runs as its own compose project in `/opt/ivay-pilot` on the VPS, behind Coolify's Traefik
+(Let's Encrypt). Postgres is bound to the VPS loopback only; its password lives in
+`/opt/ivay-pilot/deploy/pilot/.env` on the server and nowhere else.
+
+```
+sh deploy/pilot/deploy.sh        # redeploy (one ssh connection; fail2ban blocks repeats)
+ssh -N -L 15432:127.0.0.1:15432 root@2.25.105.110     # tunnel, leave running
+make live DEV_DB=postgresql+asyncpg://ivay:<password>@127.0.0.1:15432/ivay
+make gates DEV_DB=... SHOP=shop_dev
+```
+
+To connect a real Shopify shop, add its storefront origin to `shop.allowed_origins` and use its
+own shop id (see NOTES.md S9, S10, S14).
+
 ## Installing the checkout pixel
 
 The pixel records `checkout_started` and order completion so outcomes can be joined to sessions.

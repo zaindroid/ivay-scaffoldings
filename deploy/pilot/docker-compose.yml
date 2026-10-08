@@ -1,0 +1,82 @@
+# Hosted pilot. One public host; Traefik (Coolify's proxy) terminates TLS and routes by path:
+#   /v1/* and /health -> api     everything else -> static (demo store + SDK bundle)
+# Postgres has no public port: it listens on the VPS loopback only (reach it with an SSH tunnel).
+name: ivay-pilot
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ivay
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ivay
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ivay -d ivay"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: ../../api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ivay:${POSTGRES_PASSWORD}@postgres:5432/ivay
+      IVAY_WEBHOOK_SECRET_SHOP_DEV: ${IVAY_WEBHOOK_SECRET_SHOP_DEV:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal, coolify]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: coolify
+      traefik.http.routers.ivay-api.rule: Host(`${PILOT_HOST}`) && (PathPrefix(`/v1`) || Path(`/health`))
+      traefik.http.routers.ivay-api.entrypoints: https
+      traefik.http.routers.ivay-api.tls: "true"
+      traefik.http.routers.ivay-api.tls.certresolver: letsencrypt
+      traefik.http.routers.ivay-api.priority: "100"
+      traefik.http.routers.ivay-api.service: ivay-api
+      traefik.http.services.ivay-api.loadbalancer.server.port: "8000"
+
+  static:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ../../demo-store:/usr/share/nginx/html:ro
+      - ../../sdk/dist:/usr/share/nginx/sdk:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [coolify]
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: coolify
+      traefik.http.routers.ivay-static.rule: Host(`${PILOT_HOST}`)
+      traefik.http.routers.ivay-static.entrypoints: https
+      traefik.http.routers.ivay-static.tls: "true"
+      traefik.http.routers.ivay-static.tls.certresolver: letsencrypt
+      traefik.http.routers.ivay-static.priority: "1"
+      traefik.http.routers.ivay-static.service: ivay-static
+      traefik.http.services.ivay-static.loadbalancer.server.port: "80"
+      # Plain HTTP for this host redirects to HTTPS (the ACME HTTP challenge is answered first).
+      traefik.http.routers.ivay-http.rule: Host(`${PILOT_HOST}`)
+      traefik.http.routers.ivay-http.entrypoints: http
+      traefik.http.routers.ivay-http.middlewares: ivay-https
+      traefik.http.routers.ivay-http.service: ivay-static
+      traefik.http.middlewares.ivay-https.redirectscheme.scheme: https
+
+networks:
+  internal:
+  coolify:
+    external: true
+
+volumes:
+  pgdata:

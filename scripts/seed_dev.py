@@ -23,8 +23,13 @@ async def main() -> None:
     config = json.loads(
         (ROOT / "contracts" / "fixtures" / "valid" / "shop-config.full.json").read_text()
     )
-    config["log_endpoint"] = f"http://localhost:{api_port}/v1/events"
-    origins = [f"http://localhost:{static_port}", f"http://127.0.0.1:{static_port}"]
+    public = os.environ.get("IVAY_PUBLIC_BASE")  # hosted pilot: one https origin for everything
+    if public:
+        config["log_endpoint"] = f"{public}/v1/events"
+        origins = [public]
+    else:
+        config["log_endpoint"] = f"http://localhost:{api_port}/v1/events"
+        origins = [f"http://localhost:{static_port}", f"http://127.0.0.1:{static_port}"]
     engine = create_async_engine(url)
     async with engine.begin() as conn:
         await conn.execute(
